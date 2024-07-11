@@ -8,7 +8,7 @@
          http://www.springframework.org/schema/context/spring-context.xsd">
 
     <!-- 这个bean一定要放在最前面-->
-    <bean id="kafkaSaslConfig" class="com.aliyun.openservices.kafka.ons.KafkaSaslConfig"></bean>
+    <bean id="kafkaSaslConfig" class="com.openservices.kafka.ons.KafkaSaslConfig"></bean>
     <!-- 定义consumer的参数 -->
     <bean id="consumerProperties" class="java.util.HashMap">
         <constructor-arg>
@@ -38,7 +38,7 @@
     </bean>
 
     <!-- 实际执行消息消费的类 -->
-    <bean id="consumerMessageListener" class="com.aliyun.openservices.kafka.ons.ConsumerMessageListener"/>
+    <bean id="consumerMessageListener" class="com.openservices.kafka.ons.ConsumerMessageListener"/>
 
     <!-- 消费者容器配置信息 -->
     <bean id="containerProperties" class="org.springframework.kafka.listener.config.ContainerProperties">
