@@ -51,35 +51,32 @@ public class CrossNetCheckService {
         //构造消费对象，也即生成一个消费实例。
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        KafkaConsumer<String, String> consumer = new KafkaConsumer(props);
-        System.out.println("============================================");
+        //KafkaConsumer<String, String> consumer = new KafkaConsumer(props);
+        // System.out.println("============================================");
         //展示Topic列表
-        System.out.println("consumer.listTopics检测");
+        //System.out.println("consumer.listTopics检测");
 //        Map<String, List<PartitionInfo>> topicList = consumer.listTopics();
-//
-//
 //        for (Map.Entry<String, List<PartitionInfo>> topicInfoMap : topicList.entrySet()) {
 //            System.out.println("topic列表" + topicInfoMap.getKey());
 //            System.out.println("topic分区信息" + ":" + topicInfoMap.getValue());
 //        }
-        System.out.println("============================================");
-        System.out.println();
-
-        System.out.println("producer.send test1 topic检测");
+        //   System.out.println("============================================");
+        //   System.out.println();
+        //  System.out.println("producer.send test1 topic检测");
         try {
             //构造一个消息队列Kafka版消息。
-            String topic = "test1"; //消息所属的Topic，请在控制台申请之后，填写在这里。
+            String topic = "test"; //消息所属的Topic，请在控制台申请之后，填写在这里。
             String value = "this is kafka msg value"; //消息的内容。
             //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可。
             KafkaProducer<String, String> producer = new KafkaProducer(props);
             //批量获取Future对象可以加快速度。但注意，批量不要太大。
-            for (int i = 0; i < 0; i++) {
+            for (int i = 0; i < 10; i++) {
                 //发送消息，并获得一个Future对象。
                 ProducerRecord<String, String> kafkaMessage = new ProducerRecord(topic, value + ": " + i);
                 Future<RecordMetadata> metadataFuture = producer.send(kafkaMessage);
                 //同步获得Future对象的结果。
-               //RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
-              // System.out.println("写入OK:" + recordMetadata.toString());
+                RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
+                System.out.println("写入OK:" + recordMetadata.toString());
             }
             producer.close();
             System.out.println("============================================");
@@ -88,7 +85,6 @@ public class CrossNetCheckService {
             System.out.println("获取元数据");
             try {
                 Class<?> clazz = KafkaProducer.class;
-
                 // 获取指定字段
                 Field field = clazz.getDeclaredField("metadata");
                 // 如果字段是私有的，我们需要调用setAccessible(true)方法
@@ -106,6 +102,10 @@ public class CrossNetCheckService {
             e.printStackTrace();
         }
 
+        //adminCheck(props);
+    }
+
+    private static void adminCheck(Properties props) {
         System.out.println("AdminClient检测");
         System.out.println("AdminClient检测");
         System.out.println("AdminClient检测");
@@ -144,8 +144,6 @@ public class CrossNetCheckService {
                 AdminMetadataManager.AdminMetadataUpdater updater = (AdminMetadataManager.AdminMetadataUpdater) updaterField.get(metadataManager);
 
 
-
-
                 System.out.println("元数据controller: " + metadataManager.controller().toString());
                 System.out.println("元数据: " + updater.fetchNodes().toString());
             } catch (NoSuchFieldException e) {
@@ -164,12 +162,12 @@ public class CrossNetCheckService {
                     resources.add(configResource);
                 }
                 DescribeConfigsResult describeConfigsResult = adminClient.describeConfigs(resources);
-                System.out.println("adminClient.describeConfigs:"+describeConfigsResult.all().get().toString());
+                System.out.println("adminClient.describeConfigs:" + describeConfigsResult.all().get().toString());
                 System.out.println("============================================");
                 System.out.println();
             }
             ListConsumerGroupsResult listConsumerGroupsResult = adminClient.listConsumerGroups();
-            System.out.println("adminClient.listConsumerGroups:"+listConsumerGroupsResult.all().get());
+            System.out.println("adminClient.listConsumerGroups:" + listConsumerGroupsResult.all().get());
             System.out.println("============================================");
             System.out.println();
             for (ConsumerGroupListing consumerGroupListing : listConsumerGroupsResult.all().get()) {
