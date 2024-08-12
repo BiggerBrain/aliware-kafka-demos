@@ -3,21 +3,17 @@ import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.admin.internals.AdminMetadataManager;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.Cluster;
-import org.apache.kafka.common.Node;
-import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.internals.ClusterResourceListeners;
-import org.apache.kafka.common.utils.LogContext;
 
 import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -31,11 +27,8 @@ public class CrossNetCheckService {
         Properties props = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点。
         props.put("bootstrap.servers", args[0].trim());
-        props.put("topic", "test1");
-
         //设置SASL_PLAINTEXT 接入
         initSaslPlainText(props);
-
         //消息队列Kafka版消息的序列化方式。
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
@@ -47,22 +40,36 @@ public class CrossNetCheckService {
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, false);
         //设置客户端内部重试间隔。
         props.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, 3000);
-
         //构造消费对象，也即生成一个消费实例。
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        //KafkaConsumer<String, String> consumer = new KafkaConsumer(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer(props);
+        ArrayList<Long> dateList = new ArrayList<>();
+        dateList.add(System.currentTimeMillis() + 1000 * 60 * 60 * 24);
+        dateList.add(System.currentTimeMillis());
+        dateList.add(System.currentTimeMillis()-1000*60*60*24);
+        dateList.add(System.currentTimeMillis()-1000*60*60*24*2);
+        dateList.add(System.currentTimeMillis()-1000*60*60*24*3);
+        dateList.add(System.currentTimeMillis()-1000*60*60*24*4);
+        for (Long dateLong : dateList) {
+            Map<TopicPartition, Long> timestampsToSearch = new HashMap<TopicPartition, Long>();
+            timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194", 4), dateLong);
+            Map<TopicPartition, OffsetAndTimestamp> topicPartitionOffsetAndTimestampMap =
+                    consumer.offsetsForTimes(timestampsToSearch);
+            System.out.printf("topicPartitionOffsetAndTimestampMap:" + new Date(dateLong) + ":" + topicPartitionOffsetAndTimestampMap);
+        }
+//        timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194",4), Date.UTC(2024,8,9,1,1,1));
+//        timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194",4), Date.UTC(2024,8,8,1,1,1));
+//        timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194",4), Date.UTC(2024,8,7,1,1,1));
+//        timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194",4), Date.UTC(2024,8,6,1,1,1));
+
         // System.out.println("============================================");
         //展示Topic列表
-        //System.out.println("consumer.listTopics检测");
-//        Map<String, List<PartitionInfo>> topicList = consumer.listTopics();
-//        for (Map.Entry<String, List<PartitionInfo>> topicInfoMap : topicList.entrySet()) {
-//            System.out.println("topic列表" + topicInfoMap.getKey());
-//            System.out.println("topic分区信息" + ":" + topicInfoMap.getValue());
-//        }
-        //   System.out.println("============================================");
-        //   System.out.println();
-        //  System.out.println("producer.send test1 topic检测");
+        //producerCheck(props);
+        //adminCheck(props);
+    }
+
+    private static void producerCheck(Properties props) {
         try {
             //构造一个消息队列Kafka版消息。
             String topic = "test"; //消息所属的Topic，请在控制台申请之后，填写在这里。
@@ -101,8 +108,6 @@ public class CrossNetCheckService {
             //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
             e.printStackTrace();
         }
-
-        //adminCheck(props);
     }
 
     private static void adminCheck(Properties props) {
