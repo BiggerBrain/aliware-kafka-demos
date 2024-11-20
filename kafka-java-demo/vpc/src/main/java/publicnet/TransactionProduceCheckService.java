@@ -1,6 +1,7 @@
-package tool.kafka;
+package publicnet;
 
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.admin.internals.AdminMetadataManager;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -12,7 +13,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
-import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.common.config.SaslConfigs;
 
 import java.lang.reflect.Field;
@@ -21,11 +21,23 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class CrossNetCheckService {
+public class TransactionProduceCheckService {
 
     public static void main(String[] args) {
+        //adminCheck();
+        Properties properties = new Properties();
+        //设置接入点，请通过控制台获取对应Topic的接入点。
+        properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "150.158.225.98:50002");
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        //设置SASL_PLAINTEXT 接入
+        initSaslPlainText(properties);
+        transactionProduce(properties);
+    }
+
+    private static void adminCheck() {
         for (Map.Entry<String, String> stringStringEntry : System.getenv().entrySet()) {
-            System.out.println("stringStringEntry:"+stringStringEntry);
+            System.out.println("stringStringEntry:" + stringStringEntry);
         }
 
         Map<String, NewPartitions> newPartitions = new HashMap<>();
@@ -42,15 +54,16 @@ public class CrossNetCheckService {
         //  SASL 采用 Plain 方式。
         properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
 
-        newPartitions.put("9-9",NewPartitions.increaseTo(4));
-        try (org.apache.kafka.clients.admin.AdminClient adminClient = org.apache.kafka.clients.admin.AdminClient.create(properties)) {
-            System.out.println("lssssssssssssss"+newPartitions);
+        newPartitions.put("9-9", NewPartitions.increaseTo(4));
+        try (AdminClient adminClient = AdminClient.create(properties)) {
+            System.out.println("lssssssssssssss" + newPartitions);
             CreatePartitionsResult createPartitionsResult = adminClient.createPartitions(newPartitions);
             createPartitionsResult.all().get();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public static void mainT(String[] args) throws ExecutionException, InterruptedException {
         System.out.println("接入点:" + args[0].trim());
         System.out.println("version:1.0");
@@ -77,10 +90,10 @@ public class CrossNetCheckService {
         ArrayList<Long> dateList = new ArrayList<>();
         dateList.add(System.currentTimeMillis() + 1000 * 60 * 60 * 24);
         dateList.add(System.currentTimeMillis());
-        dateList.add(System.currentTimeMillis()-1000*60*60*24);
-        dateList.add(System.currentTimeMillis()-1000*60*60*24*2);
-        dateList.add(System.currentTimeMillis()-1000*60*60*24*3);
-        dateList.add(System.currentTimeMillis()-1000*60*60*24*4);
+        dateList.add(System.currentTimeMillis() - 1000 * 60 * 60 * 24);
+        dateList.add(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
+        dateList.add(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 3);
+        dateList.add(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 4);
         for (Long dateLong : dateList) {
             Map<TopicPartition, Long> timestampsToSearch = new HashMap<TopicPartition, Long>();
             timestampsToSearch.put(new TopicPartition("U_TOPIC_z8300009194", 4), dateLong);
@@ -99,7 +112,7 @@ public class CrossNetCheckService {
         //adminCheck(props);
     }
 
-    private static void producerCheck(Properties props) {
+    private static void transactionProduce(Properties props) {
         try {
             //构造一个消息队列Kafka版消息。
             String topic = "test"; //消息所属的Topic，请在控制台申请之后，填写在这里。
@@ -107,7 +120,7 @@ public class CrossNetCheckService {
             //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可。
             KafkaProducer<String, String> producer = new KafkaProducer(props);
             //批量获取Future对象可以加快速度。但注意，批量不要太大。
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; true; i++) {
                 //发送消息，并获得一个Future对象。
                 ProducerRecord<String, String> kafkaMessage = new ProducerRecord(topic, value + ": " + i);
                 Future<RecordMetadata> metadataFuture = producer.send(kafkaMessage);
@@ -115,29 +128,29 @@ public class CrossNetCheckService {
                 RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
                 System.out.println("写入OK:" + recordMetadata.toString());
             }
-            producer.close();
-            System.out.println("============================================");
-            System.out.println();
-
-            System.out.println("获取元数据");
-            try {
-                Class<?> clazz = KafkaProducer.class;
-                // 获取指定字段
-                Field field = clazz.getDeclaredField("metadata");
-                // 如果字段是私有的，我们需要调用setAccessible(true)方法
-                field.setAccessible(true);
-                Metadata metadata = (Metadata) field.get(producer);
-                System.out.println("元数据controller: " + metadata.fetch().controller().toString());
-                System.out.println("元数据: " + metadata.fetch().toString());
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
-            System.out.println("============================================");
-            System.out.println();
+            //extractMetatFromProduce(producer);
         } catch (Exception e) {
             //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
             e.printStackTrace();
         }
+    }
+
+    private static void extractMetaDataFromProduce(KafkaProducer<String, String> producer) throws IllegalAccessException {
+        System.out.println("获取元数据");
+        try {
+            Class<?> clazz = KafkaProducer.class;
+            // 获取指定字段
+            Field field = clazz.getDeclaredField("metadata");
+            // 如果字段是私有的，我们需要调用setAccessible(true)方法
+            field.setAccessible(true);
+            Metadata metadata = (Metadata) field.get(producer);
+            System.out.println("元数据controller: " + metadata.fetch().controller().toString());
+            System.out.println("元数据: " + metadata.fetch().toString());
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        System.out.println("============================================");
+        System.out.println();
     }
 
     private static void adminCheck(Properties props) {
@@ -219,10 +232,10 @@ public class CrossNetCheckService {
     }
 
     private static void initSaslPlainText(Properties props) {
-        if (false) {
+        if (true) {
             String prefix = "org.apache.kafka.common.security.plain.PlainLoginModule";
-            String username = "ckafka-7kdkjk3d#test12345";
-            String password = "test12345";
+            String username = "ckafka-r8k37ajr#src";
+            String password = "12345678a";
             String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, username, password);
             props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
             //  SASL_PLAINTEXT 公网接入
