@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import tool.cmdjmx.Collector;
 import tool.cmdjmx.IRequest;
 import tool.cmdjmx.IResponse;
+import tool.cmdjmx.support.DispatcherHandler;
 
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;

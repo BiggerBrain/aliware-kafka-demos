@@ -25,6 +25,11 @@ public class TransactionProduceCheckService {
 
     public static void main(String[] args) {
         //adminCheck();
+        //transactionProduce();
+        adminAlter();
+    }
+
+    private static void transactionProduce() {
         Properties properties = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点。
         properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "150.158.225.98:50002");
@@ -33,6 +38,38 @@ public class TransactionProduceCheckService {
         //设置SASL_PLAINTEXT 接入
         initSaslPlainText(properties);
         transactionProduce(properties);
+    }
+
+    private static void adminAlter() {
+        for (Map.Entry<String, String> stringStringEntry : System.getenv().entrySet()) {
+            System.out.println("stringStringEntry:" + stringStringEntry);
+        }
+
+        Map<String, NewPartitions> newPartitions = new HashMap<>();
+        Properties properties = new Properties();
+        //设置接入点，请通过控制台获取对应Topic的接入点。
+        properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "81.69.183.189:50012");
+        properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, "PublicDestAdminClient#" + UUID.randomUUID());
+        //如果客户指定ACL，则采用ACL连接，只支持SASL_PLAINTEXT
+        String prefix = "org.apache.kafka.common.security.plain.PlainLoginModule";
+        String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, "ckafka-o9gjq3xv#src", "12345678a");
+        properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+        //  SASL_PLAINTEXT 公网接入
+        properties.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+        //  SASL 采用 Plain 方式。
+        properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+
+        try (AdminClient adminClient = AdminClient.create(properties)) {
+            Map<ConfigResource, Collection<AlterConfigOp>> configs = new HashMap<>();
+            configs.put(new ConfigResource(ConfigResource.Type.TOPIC,"lsx"),Arrays.asList(new AlterConfigOp(
+                    new ConfigEntry("retention.bytes","102410240"),
+                    AlterConfigOp.OpType.SET
+            )));
+            AlterConfigsResult alterConfigsResult = adminClient.incrementalAlterConfigs(configs);
+            System.out.println(alterConfigsResult.all().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void adminCheck() {

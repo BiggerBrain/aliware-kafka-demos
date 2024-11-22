@@ -6,7 +6,6 @@ import tool.cmdjmx.Collector;
 import tool.cmdjmx.IRequest;
 import tool.cmdjmx.IResponse;
 
-import java.net.http.HttpClient;
 
 /**
  * @ClassName HttpCollector
