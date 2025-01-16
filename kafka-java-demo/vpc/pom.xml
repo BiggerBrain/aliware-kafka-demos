@@ -21,6 +21,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.6</version>
@@ -35,6 +40,13 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.17.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tencent.cloud.ckafka</groupId>
+            <artifactId>replicator-core</artifactId>
+            <version>1.1</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/replicator-core-1.1-jar-with-dependencies.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
@@ -75,7 +87,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>com.openservices.kafka.ons.KafkaProducerDemo</mainClass>
+                            <mainClass>tool.kafka.KafkaProducerDemo</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

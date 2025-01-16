@@ -4,9 +4,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.admin.internals.AdminMetadataManager;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,7 +13,9 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.SaslConfigs;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,7 +24,55 @@ import java.util.concurrent.TimeUnit;
 public class TransactionProduceCheckService {
 
     public static void main(String[] args) {
+        consumerCheck();
         //adminCheck();
+        //transactionProduce();
+        //adminAlter();
+    }
+
+    private static void consumerCheck() {
+        Properties properties = new Properties();
+        //设置接入点，请通过控制台获取对应Topic的接入点。
+        properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "212.129.229.117:50002");
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        //设置SASL_PLAINTEXT 接入
+        initSaslPlainText(properties);
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG,"lsx-cg");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
+        consumer.assign(Arrays.asList(
+                new TopicPartition("lsx", 0),
+                new TopicPartition("lsx", 1),
+                new TopicPartition("lsx", 2)
+        ));
+        Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(
+                Arrays.asList(new TopicPartition("new",0)));
+        System.out.println("beginningOffsets:" + beginningOffsets);
+        consumer.seekToBeginning(Arrays.asList(new TopicPartition("lsx", 0)));
+        consumer.seek(new TopicPartition("lsx", 1), 146824);
+        consumer.seekToEnd(Arrays.asList(new TopicPartition("lsx", 2)));
+//        consumer.seekToEnd(Arrays.asList(new TopicPartition("lsx", 1)));
+
+        try {
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    System.out.printf("Consumed message: topic%s offset = %d%n",record.topic()+"-"+record.partition(), record.offset());
+
+                    // 手动提交位点
+                    TopicPartition partition = new TopicPartition(record.topic(), record.partition());
+                    Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+                    offsets.put(partition, new OffsetAndMetadata(record.offset() + 1)); // 提交下一个位点
+                    consumer.commitSync(offsets); // 同步提交
+                }
+            }
+        } finally {
+            consumer.close();
+        }
+    }
+
+    private static void transactionProduce() {
         Properties properties = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点。
         properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "150.158.225.98:50002");
@@ -33,6 +81,38 @@ public class TransactionProduceCheckService {
         //设置SASL_PLAINTEXT 接入
         initSaslPlainText(properties);
         transactionProduce(properties);
+    }
+
+    private static void adminAlter() {
+        for (Map.Entry<String, String> stringStringEntry : System.getenv().entrySet()) {
+            System.out.println("stringStringEntry:" + stringStringEntry);
+        }
+
+        Map<String, NewPartitions> newPartitions = new HashMap<>();
+        Properties properties = new Properties();
+        //设置接入点，请通过控制台获取对应Topic的接入点。
+        properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "81.69.183.189:50012");
+        properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, "PublicDestAdminClient#" + UUID.randomUUID());
+        //如果客户指定ACL，则采用ACL连接，只支持SASL_PLAINTEXT
+        String prefix = "org.apache.kafka.common.security.plain.PlainLoginModule";
+        String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, "ckafka-o9gjq3xv#src", "12345678a");
+        properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+        //  SASL_PLAINTEXT 公网接入
+        properties.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+        //  SASL 采用 Plain 方式。
+        properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+
+        try (AdminClient adminClient = AdminClient.create(properties)) {
+            Map<ConfigResource, Collection<AlterConfigOp>> configs = new HashMap<>();
+            configs.put(new ConfigResource(ConfigResource.Type.TOPIC,"lsx"),Arrays.asList(new AlterConfigOp(
+                    new ConfigEntry("retention.bytes","102410240"),
+                    AlterConfigOp.OpType.SET
+            )));
+            AlterConfigsResult alterConfigsResult = adminClient.incrementalAlterConfigs(configs);
+            System.out.println(alterConfigsResult.all().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void adminCheck() {
@@ -273,7 +353,7 @@ public class TransactionProduceCheckService {
     private static void initSaslPlainText(Properties props) {
         if (true) {
             String prefix = "org.apache.kafka.common.security.plain.PlainLoginModule";
-            String username = "ckafka-r8k37ajr#src";
+            String username = "ckafka-o9gjq3xv#src";
             String password = "12345678a";
             String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, username, password);
             props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
