@@ -118,6 +118,45 @@ public class TransactionProduceCheckService {
             String topic = "test"; //消息所属的Topic，请在控制台申请之后，填写在这里。
             String value = "this is kafka msg value"; //消息的内容。
             //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可。
+            props.put("transactional.id", "my-transactional-id");
+            KafkaProducer<String, String> producer = new KafkaProducer(props);
+            producer.initTransactions();
+            //批量获取Future对象可以加快速度。但注意，批量不要太大。
+            producer.beginTransaction();
+            for (int i = 0; i < 100000; i++) {
+                //发送消息，并获得一个Future对象。
+                ProducerRecord<String, String> kafkaMessage = new ProducerRecord(topic, value + ": " + i);
+                Future<RecordMetadata> metadataFuture = producer.send(kafkaMessage);
+                //同步获得Future对象的结果。
+                RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
+                System.out.println("写入OK:" + recordMetadata.toString());
+            }
+            producer.commitTransaction();
+
+
+            producer.beginTransaction();
+            for (int i = 0; i < 1000000; i++) {
+                //发送消息，并获得一个Future对象。
+                ProducerRecord<String, String> kafkaMessage = new ProducerRecord(topic, value + ": " + i);
+                Future<RecordMetadata> metadataFuture = producer.send(kafkaMessage);
+                //同步获得Future对象的结果。
+                RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
+                System.out.println("写入2OK:" + recordMetadata.toString());
+            }
+            producer.commitTransaction();
+        } catch (Exception e) {
+            //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
+            e.printStackTrace();
+
+        }
+    }
+
+    private static void normalProduce(Properties props) {
+        try {
+            //构造一个消息队列Kafka版消息。
+            String topic = "test"; //消息所属的Topic，请在控制台申请之后，填写在这里。
+            String value = "this is kafka msg value"; //消息的内容。
+            //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可。
             KafkaProducer<String, String> producer = new KafkaProducer(props);
             //批量获取Future对象可以加快速度。但注意，批量不要太大。
             for (int i = 0; true; i++) {
@@ -128,12 +167,12 @@ public class TransactionProduceCheckService {
                 RecordMetadata recordMetadata = metadataFuture.get(3, TimeUnit.SECONDS);
                 System.out.println("写入OK:" + recordMetadata.toString());
             }
-            //extractMetatFromProduce(producer);
         } catch (Exception e) {
             //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
             e.printStackTrace();
         }
     }
+
 
     private static void extractMetaDataFromProduce(KafkaProducer<String, String> producer) throws IllegalAccessException {
         System.out.println("获取元数据");
