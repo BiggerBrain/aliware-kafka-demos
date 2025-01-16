@@ -22,10 +22,8 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Scanner;
 
 public class EsTest {
     public static void main(String[] args)  {
@@ -34,8 +32,8 @@ public class EsTest {
         //填的这个：{"Ip":"11.145.102.205","Port":9200,"ServiceVip":"10.2.0.6","UniqVpcId":"vpc-ngdmayfd","UserName":"retail","Password":"SXLretail*kd6ic9q","SelfBuilt":false,"Resource":"es-fi7aop3c","IsUpdate":null},
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         String userName = "elastic";
-        String passWord = "SXKdkdc*dijdc0j";
-        String iP = "11.145.101.103";
+        String passWord = "Ckafka2024#";
+        String iP = "11.145.101.207";
         Integer port = 9200;
         credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(userName, passWord));
@@ -68,14 +66,13 @@ public class EsTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(esGetInfoDTO);
+        System.out.println(esGetInfoDTO.toString());
 
     }
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     @NoArgsConstructor
-    @ToString
     public static class EsGetInfoDTO {
         @JsonProperty("version")
         private Version version;
@@ -92,6 +89,13 @@ public class EsTest {
         public class Version {
             @JsonProperty("number")
             String number;
+        }
+
+        @Override
+        public String toString() {
+            return "EsGetInfoDTO{" +
+                    "version=" + version +
+                    '}';
         }
     }
     public static class DisableRedirectStrategy implements RedirectStrategy {
