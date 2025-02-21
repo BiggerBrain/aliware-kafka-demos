@@ -78,7 +78,7 @@ public class ConnectorCheck {
     static String[] cmdParts2 = {"curl", "-H", "Cache-Control: max-age=0", "--compressed", "https://www.chineseconverter.com/zh-cn/convert/chinese-stroke-order-tool"};
 
 
-    private static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         List<ConnectorClusterInfo> clusterInfoList = new ArrayList<ConnectorClusterInfo>();
 //        clusterInfoList.add(new ConnectorClusterInfo("gz2","11.142.172.114","11.135.14.110:11456"));
 //        clusterInfoList.add(new ConnectorClusterInfo("gz5","30.45.12.101","11.135.14.141:16056"));
