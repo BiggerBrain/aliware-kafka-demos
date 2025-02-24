@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ConnectorCheckContainsJgwIpBj {
+public class ConnectorCheckContainsJgwIpGz {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
@@ -118,7 +118,6 @@ public class ConnectorCheckContainsJgwIpBj {
                         }
                     }
                 }
-                Thread.sleep(500);
             }
         }
     }
