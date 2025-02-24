@@ -118,7 +118,7 @@ public class ConnectorCheckContainsJgwIpSh {
                         }
                     }
                 }
-                Thread.sleep(500);
+                Thread.sleep(100);
             }
         }
     }
