@@ -16,12 +16,12 @@ public class ConnectorCheckContainsJgwIpSh {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
-        public String jgwOldIp;
+        public String jnsOldIp;
 
-        public ConnectorClusterInfo(String region, String ip, String jgwOldIp) {
+        public ConnectorClusterInfo(String region, String ip, String jnsOldIp) {
             this.region = region;
             this.ip = ip;
-            this.jgwOldIp = jgwOldIp;
+            this.jnsOldIp = jnsOldIp;
         }
 
         @Override
@@ -29,7 +29,7 @@ public class ConnectorCheckContainsJgwIpSh {
             return "ConnectorClusterInfo{" +
                     "region='" + region + '\'' +
                     ", ip='" + ip + '\'' +
-                    ", jgwOldIp='" + jgwOldIp + '\'' +
+                    ", jnsOldIp='" + jnsOldIp + '\'' +
                     '}';
         }
     }
@@ -113,7 +113,7 @@ public class ConnectorCheckContainsJgwIpSh {
                 });
                 if (connectorObj != null && connectorObj.config != null ) {
                     for (String value : connectorObj.config.values()) {
-                        if(value.contains(connectorClusterInfo.jgwOldIp)){
+                        if(value.contains(connectorClusterInfo.jnsOldIp)){
                             System.out.println(connector);
                         }
                     }
