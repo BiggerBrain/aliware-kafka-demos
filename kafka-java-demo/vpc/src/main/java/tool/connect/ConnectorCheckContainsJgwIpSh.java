@@ -112,7 +112,7 @@ public class ConnectorCheckContainsJgwIpSh {
             connectorsList.stream().sorted();
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-                System.out.print(i++ + " ");
+                System.out.print(i + " ");
                 boolean has = false;
                 String connectorConfigJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector);
                 Connector connectorObj = jsonMapper.readValue(connectorConfigJson, new TypeReference<Connector>() {
