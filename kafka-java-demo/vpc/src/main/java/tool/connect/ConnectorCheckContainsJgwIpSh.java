@@ -91,7 +91,6 @@ public class ConnectorCheckContainsJgwIpSh {
         clusterInfoList.add(new ConnectorClusterInfo("sh7", "30.170.13.115", "9.18.96.147:10444"));
 
 
-
         for (ConnectorClusterInfo connectorClusterInfo : clusterInfoList) {
             // http://11.142.172.114:8083/connectors
             //String connectors = tool.util.HttpUtil.get("http://" + connectorClusterInfo.ip + ":8083/connectors");
@@ -110,19 +109,24 @@ public class ConnectorCheckContainsJgwIpSh {
             System.out.println(connectorClusterInfo);
             System.out.println("connectorsList:" + connectorsList.size());
             System.out.println("整理表格:");
-            int i =0;
             connectorsList.stream().sorted();
-            for (String connector : connectorsList) {
+            for (int i = 0; i < connectorsList.size(); i++) {
+                String connector = connectorsList.get(i);
                 System.out.print(i++ + " ");
+                boolean has = false;
                 String connectorConfigJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector);
                 Connector connectorObj = jsonMapper.readValue(connectorConfigJson, new TypeReference<Connector>() {
                 });
                 if (connectorObj != null && connectorObj.config != null) {
                     for (String value : connectorObj.config.values()) {
                         if (value.contains(connectorClusterInfo.jnsOldIp)) {
-                            System.out.print(connector);
+                            System.out.print(connector + " " + "noPass");
+                            has = true;
                         }
                     }
+                }
+                if (!has) {
+                    System.out.print(connector + " " + "pass");
                 }
                 System.out.println();
             }
