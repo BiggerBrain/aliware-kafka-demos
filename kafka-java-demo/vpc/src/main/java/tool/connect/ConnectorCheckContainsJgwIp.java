@@ -16,12 +16,12 @@ public class ConnectorCheckContainsJgwIp {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
-        public String kafkaIp;
+        public String jgwOldIp;
 
-        public ConnectorClusterInfo(String region, String ip, String kafkaIp) {
+        public ConnectorClusterInfo(String region, String ip, String jgwOldIp) {
             this.region = region;
             this.ip = ip;
-            this.kafkaIp = kafkaIp;
+            this.jgwOldIp = jgwOldIp;
         }
 
         @Override
@@ -29,7 +29,7 @@ public class ConnectorCheckContainsJgwIp {
             return "ConnectorClusterInfo{" +
                     "region='" + region + '\'' +
                     ", ip='" + ip + '\'' +
-                    ", kafkaIp='" + kafkaIp + '\'' +
+                    ", jgwOldIp='" + jgwOldIp + '\'' +
                     '}';
         }
     }
@@ -113,7 +113,7 @@ public class ConnectorCheckContainsJgwIp {
                 });
                 if (connectorObj != null && connectorObj.config != null ) {
                     for (String value : connectorObj.config.values()) {
-                        if(value.contains(connectorClusterInfo.kafkaIp)){
+                        if(value.contains(connectorClusterInfo.jgwOldIp)){
                             System.out.println(connector);
                         }
                     }
