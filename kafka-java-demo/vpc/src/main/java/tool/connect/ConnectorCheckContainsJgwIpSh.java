@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpSh
+ */
 public class ConnectorCheckContainsJgwIpSh {
     public static class ConnectorClusterInfo {
         public String region;
@@ -107,18 +110,21 @@ public class ConnectorCheckContainsJgwIpSh {
             System.out.println(connectorClusterInfo);
             System.out.println("connectorsList:" + connectorsList.size());
             System.out.println("整理表格:");
+            int i =0;
+            connectorsList.stream().sorted();
             for (String connector : connectorsList) {
+                System.out.print(i++ + " ");
                 String connectorConfigJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector);
                 Connector connectorObj = jsonMapper.readValue(connectorConfigJson, new TypeReference<Connector>() {
                 });
-                if (connectorObj != null && connectorObj.config != null ) {
+                if (connectorObj != null && connectorObj.config != null) {
                     for (String value : connectorObj.config.values()) {
-                        if(value.contains(connectorClusterInfo.jnsOldIp)){
-                            System.out.println(connector);
+                        if (value.contains(connectorClusterInfo.jnsOldIp)) {
+                            System.out.print(connector);
                         }
                     }
                 }
-                Thread.sleep(100);
+                System.out.println();
             }
         }
     }
