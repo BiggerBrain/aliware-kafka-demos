@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpSh
@@ -105,8 +106,8 @@ public class ConnectorCheckContainsJgwIpSh {
             jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
 
 
-            ArrayList<String> connectorsList = jsonMapper.readValue(connectors, new TypeReference<ArrayList<String>>() {
-            });
+            List<String> connectorsList = jsonMapper.readValue(connectors, new TypeReference<ArrayList<String>>() {
+            }).stream().collect(Collectors.toSet()).stream().collect(Collectors.toList());
 
             System.out.println(connectorClusterInfo);
             System.out.println("connectorsList:" + connectorsList.size());
@@ -114,7 +115,7 @@ public class ConnectorCheckContainsJgwIpSh {
             connectorsList.stream().sorted();
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-                System.out.print(i + " ");
+//                System.out.print(i + " ");
                 boolean has = false;
                 String connectorConfigJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector);
                 Connector connectorObj = jsonMapper.readValue(connectorConfigJson, new TypeReference<Connector>() {
@@ -122,15 +123,16 @@ public class ConnectorCheckContainsJgwIpSh {
                 if (connectorObj != null && connectorObj.config != null) {
                     for (String value : connectorObj.config.values()) {
                         if (value.contains(connectorClusterInfo.jnsOldIp)) {
-                            System.out.print(connector + " " + "noPass");
+                            System.out.println(connector);
                             has = true;
+                            break;
                         }
                     }
                 }
                 if (!has) {
-                    System.out.print(connector + " " + "pass");
+//                    System.out.print(connector + " " + "pass");
                 }
-                System.out.println();
+//                System.out.println();
             }
         }
     }
