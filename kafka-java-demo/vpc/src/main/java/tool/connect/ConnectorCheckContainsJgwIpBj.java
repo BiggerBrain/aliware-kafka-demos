@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ConnectorCheckContainsJgwIp {
+public class ConnectorCheckContainsJgwIpBj {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
@@ -85,7 +85,7 @@ public class ConnectorCheckContainsJgwIp {
 //        clusterInfoList.add(new ConnectorClusterInfo("bj3","9.147.192.204","9.164.21.40:12277"));
 //        clusterInfoList.add(new ConnectorClusterInfo("bj4","9.147.196.13","9.144.92.60:6146"));
 //        clusterInfoList.add(new ConnectorClusterInfo("bj1","9.144.115.193","9.144.32.56:10887"));
-        clusterInfoList.add(new ConnectorClusterInfo("sh7", "30.170.13.115", "9.18.96.147:10444"));
+        clusterInfoList.add(new ConnectorClusterInfo("gz7", "11.139.118.61", "9.27.74.132:10423"));
 
 
 
