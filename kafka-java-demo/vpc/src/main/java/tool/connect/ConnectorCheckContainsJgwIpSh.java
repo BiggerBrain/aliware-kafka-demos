@@ -89,6 +89,8 @@ public class ConnectorCheckContainsJgwIpSh {
 //        clusterInfoList.add(new ConnectorClusterInfo("bj4","9.147.196.13","9.144.92.60:6146"));
 //        clusterInfoList.add(new ConnectorClusterInfo("bj1","9.144.115.193","9.144.32.56:10887"));
         clusterInfoList.add(new ConnectorClusterInfo("sh7", "30.170.13.115", "9.18.96.147"));
+        clusterInfoList.add(new ConnectorClusterInfo("sh7", "30.44.62.51", "9.18.96.147"));
+        clusterInfoList.add(new ConnectorClusterInfo("sh7", "30.44.62.50", "9.18.96.147"));
 
 
         for (ConnectorClusterInfo connectorClusterInfo : clusterInfoList) {
