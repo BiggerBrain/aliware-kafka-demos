@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.aliyun.openservices</groupId>
-    <artifactId>kafka-vpc-demo</artifactId>
+    <artifactId>kafka-vpc-demo-streams</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
