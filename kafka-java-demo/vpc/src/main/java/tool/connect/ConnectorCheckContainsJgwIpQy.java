@@ -113,8 +113,6 @@ public class ConnectorCheckContainsJgwIpQy {
                     System.out.println(connectorConfigJson);
                     return;
                 }
-
-//                System.out.println();
             }
         }
     }
