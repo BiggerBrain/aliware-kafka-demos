@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 /**
  * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpQy
+ * tkex-login -cls cls-5vzjheeo -n ns-prjm6pcb-1541281-production -p connect-qy-0 -c connect-qy -b /bin/bash
  */
 public class ConnectorCheckContainsJgwIpQy {
     public static class ConnectorClusterInfo {
