@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpSh
+ * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpQy
  */
 public class ConnectorCheckContainsJgwIpQy {
     public static class ConnectorClusterInfo {
