@@ -156,6 +156,12 @@ public class ConnectorCheckContainsJgwIpLocal {
     }
 
     private static boolean oldJnsOperation(String sourceJson) throws IOException {
+
+
+        System.out.println("老配置");
+        String oldJsonFormat = formatJson(sourceJson);
+        System.out.println(oldJsonFormat);
+        System.out.println("新配置");
         ObjectMapper jsonMapper = new ObjectMapper();
         jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
@@ -166,16 +172,12 @@ public class ConnectorCheckContainsJgwIpLocal {
                 if (entry.getValue().contains("100.78.98.45:10558")) {
                     String key = entry.getKey();
                     target.config.put(key, entry.getValue().replace("100.78.98.45:10558", "30.46.103.13:13186"));
+                    break;
                 }
             }
         }
-
-        System.out.println("老配置");
-        String oldJsonFormat = formatJson(sourceJson);
-        System.out.println(oldJsonFormat);
-        System.out.println("新配置");
         String newFormatJson = formatJson(jsonMapper.writeValueAsString(target));
-        System.out.println();
+        System.out.println(newFormatJson);
 
         // 比较JSON字符串并输出差异
         ObjectMapper mapper = new ObjectMapper();
@@ -202,5 +204,21 @@ public class ConnectorCheckContainsJgwIpLocal {
     public static class Connector {
         public String name;
         public Map<String, String> config;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Map<String, String> getConfig() {
+            return config;
+        }
+
+        public void setConfig(Map<String, String> config) {
+            this.config = config;
+        }
     }
 }
