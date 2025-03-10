@@ -206,10 +206,7 @@ public class ConnectorCheckContainsJgwIpCheck {
     }
 
     private static boolean oldJnsOperation(String oldIp, String newIp, String connector, String sourceJson) throws IOException {
-        System.out.println("老配置");
-        String oldJsonFormat = formatJson(sourceJson);
-        System.out.println(oldJsonFormat);
-        Boolean need = false;
+               Boolean need = false;
         ObjectMapper jsonMapper = new ObjectMapper();
         jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
@@ -225,23 +222,28 @@ public class ConnectorCheckContainsJgwIpCheck {
             }
         }
 
-        System.out.println("新配置");
+
+        String oldJsonFormat = formatJson(sourceJson);
+
         String newFormatJson = formatJson(jsonMapper.writeValueAsString(targetMap));
-        System.out.println(newFormatJson);
 
-        // 比较JSON字符串并输出差异
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode oldJson = mapper.readTree(oldJsonFormat);
-        JsonNode newJson = mapper.readTree(newFormatJson);
 
-        System.out.println("不同点:");
-        compareJson(oldJson, newJson, "");
         if(!newFormatJson.contains(connector)){
             System.out.println("程序异常");
             return true;
         }
 
         if (need) {
+            System.out.println("不同点:");
+            // 比较JSON字符串并输出差异
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode oldJson = mapper.readTree(oldJsonFormat);
+            JsonNode newJson = mapper.readTree(newFormatJson);
+            compareJson(oldJson, newJson, "");
+            System.out.println("老配置");
+            System.out.println(oldJsonFormat);
+            System.out.println("新配置");
+            System.out.println(newFormatJson);
             System.out.println("是否执行更新,请输入 'Y' 执行操作，或输入其他任意键退出：");
             Scanner scanner = new Scanner(System.in);
             String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
