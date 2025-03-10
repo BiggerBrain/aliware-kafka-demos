@@ -170,9 +170,9 @@ public class ConnectorCheckContainsJgwIpLocal {
         });
         if (targetMap != null && !targetMap.isEmpty()) {
             for (Map.Entry<String, String> entry : targetMap.entrySet()) {
-                if (entry.getValue().contains("100.78.98.45:10558")) {
+                if (entry.getValue().equals("http://100.78.98.45:10558/interface.php")) {
                     String key = entry.getKey();
-                    targetMap.put(key, entry.getValue().replace("100.78.98.45:10558", "30.46.103.13:13186"));
+                    targetMap.put(key, entry.getValue().replace("http://100.78.98.45:10558/interface.php", "http://30.46.103.13:13186/interface.php"));
                     need = true;
                 }
             }
