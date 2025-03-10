@@ -253,7 +253,7 @@ public class ConnectorCheckContainsJgwIpCheck {
 
             // 检查输入是否为 'Y'（不区分大小写）
             if ("Y".equalsIgnoreCase(input)) {
-                System.out.println("记得提交审批，复制执行！！！！！！！！");
+                execCmd(cmd);
             } else {
                 System.out.println("未执行任何操作。");
             }
