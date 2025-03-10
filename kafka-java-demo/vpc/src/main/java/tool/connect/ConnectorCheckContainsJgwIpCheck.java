@@ -191,7 +191,6 @@ public class ConnectorCheckContainsJgwIpCheck {
                 //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck replace http://100.83.232.146:10386/interface.php
                 String oldIp = args[1];
                 String newIp = args[2];
-                System.out.println("替换:"+ oldIp+"=>"+newIp);
                 for (int i = 0; i < connectorsList.size(); i++) {
                     String connector = connectorsList.get(i);
                     System.out.println("校验是否替换:" + connector);
@@ -234,6 +233,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         }
 
         if (need) {
+            System.out.println("替换:"+ oldIp+"=>"+newIp);
             System.out.println("不同点:");
             // 比较JSON字符串并输出差异
             ObjectMapper mapper = new ObjectMapper();
