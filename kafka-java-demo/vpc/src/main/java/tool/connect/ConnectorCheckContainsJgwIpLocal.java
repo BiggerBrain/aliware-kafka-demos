@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 /**
  * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpLocal
  * tkex-login -cls cls-5vzjheeo -n ns-prjm6pcb-1541281-production -p connect-qy-0 -c connect-qy -b /bin/bash
+ *  java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpLocal
  */
 public class ConnectorCheckContainsJgwIpLocal {
     public static class ConnectorClusterInfo {
@@ -144,23 +145,26 @@ public class ConnectorCheckContainsJgwIpLocal {
             System.out.println(connectorClusterInfo);
             System.out.println("connectorsList:" + connectorsList.size());
             connectorsList.stream().sorted();
-            HashSet<String> hashSet = new HashSet<>(Arrays.asList("connector-yd4394gy",
+            HashSet<String> hashSet = new HashSet<>(Arrays.asList(
+                    "connector-ydqaazml",
+                    "connector-ydqap5gl",
+                    "connector-yd4ee4ay",
+                    "connector-yd4jnvmy",
+                    "connector-yd4394gy",
                     "connector-yd4ez7my",
                     "connector-yd4q73my",
                     "connector-yd4qwmgy",
                     "connector-yd4wbvgy"));
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-                    if(hashSet.contains(connector)){
-                    System.out.println("获取配置:" + connector);
-                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                    boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
-                    if (contains) {
-                        return;
-                    }
+//                if (hashSet.contains(connector)) {
+                System.out.println("获取配置:" + connector);
+                String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
+                if (contains) {
+                    return;
                 }
-
-
+//                }
             }
         }
     }
