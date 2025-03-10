@@ -194,7 +194,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 System.out.println("替换:"+ oldIp+"=>"+newIp);
                 for (int i = 0; i < connectorsList.size(); i++) {
                     String connector = connectorsList.get(i);
-                    System.out.println("获取配置:" + connector);
+                    System.out.println("校验是否替换:" + connector);
                     String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
                     boolean contains = oldJnsOperation(oldIp, newIp, connector, sourceJson);
                     if (contains) {
