@@ -1,7 +1,9 @@
 package tool.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,21 @@ public class FileUtil {
         }
 
         return lines;
+    }
+
+    /**
+     * 追加写入文件
+     *
+     * @param filePath 文件路径
+     * @param content  要追加写入的内容
+     * @throws IOException 如果写入文件时发生错误
+     */
+    public static void appendToFile(String filePath, String content) throws IOException {
+        // 使用 try-with-resources 语句确保资源会被关闭
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
+            writer.write(content);
+            writer.newLine(); // 添加换行符
+        }
     }
 
 }

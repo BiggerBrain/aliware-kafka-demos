@@ -149,7 +149,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         System.out.println(ip + " 连接器总数:" + connectorsList.size());
 
         connectorsList.stream().sorted();
-        //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck listOssUrl
+        // java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 listOssUrl
         if ("listOssUrl".equals(op)) {
             HashSet<String> ossUrlSet = new HashSet<>();
             for (int i = 0; i < connectorsList.size(); i++) {
@@ -188,7 +188,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 }
             }
         } else if ("listOssUrlConnector".equals(op)) {
-            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck listOssUrlConnector http://30.47.14.10:25530/interface.php
+            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 listOssUrlConnector  http://9.62.228.131:10729/interface.php
             String ossUrl = args[2];
             System.out.println("查找包含url的连接器:" + ossUrl);
             for (int i = 0; i < connectorsList.size(); i++) {
@@ -210,30 +210,30 @@ public class ConnectorCheckContainsJgwIpCheck {
                 }
             }
         } else if ("replace".equals(op)) {
-            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck replace http://100.83.232.146:10386/interface.php
-            String oldIp = args[1];
-            String newIp = args[2];
+            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 replace  http://9.62.228.131:10729/interface.php  http://11.139.250.10:11574/interface.php
+            String oldIp = args[2];
+            String newIp = args[3];
+            File currentFile = new File(FileUtil.currentPath(ConnectorCheckContainsJgwIpCheck.class));
+            String path = currentFile.getParentFile().getPath();
+            System.out.println("当前父类路径:" + path);
+
+            System.out.println("替换" + oldIp + "==>" + newIp);
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
-                boolean contains = oldJnsOperation(oldIp, newIp, connector, sourceJson);
-                if (contains) {
-                    return;
-                }
+
+                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson);
+
             }
         } else {
             System.out.println("不支持该命令，执行完:" + op);
         }
     }
 
-    private static boolean oldJnsOperation(String oldIp, String newIp, String connector, String sourceJson) throws IOException {
+    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson) throws IOException {
         Boolean need = false;
-        ObjectMapper jsonMapper = new ObjectMapper();
-        jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
-        HashMap<String, String> targetMap = jsonMapper.readValue(sourceJson, new TypeReference<HashMap>() {
-        });
+        HashMap<String, String> targetMap = JsonUtil.getMap(sourceJson);
         if (targetMap != null && !targetMap.isEmpty()) {
             for (Map.Entry<String, String> entry : targetMap.entrySet()) {
                 if (entry.getValue().equals(oldIp)) {
@@ -244,19 +244,21 @@ public class ConnectorCheckContainsJgwIpCheck {
             }
         }
 
-
         String oldJsonFormat = formatJson(sourceJson);
 
+        ObjectMapper jsonMapper = new ObjectMapper();
+        jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
         String newFormatJson = formatJson(jsonMapper.writeValueAsString(targetMap));
 
 
         if (!newFormatJson.contains(connector)) {
             System.out.println("程序异常");
-            return true;
+            throw new RuntimeException("程序异常");
         }
 
         if (need) {
-            System.out.println("替换:" + oldIp + "=>" + newIp);
+            System.out.println(connector + " 替换:" + oldIp + "=>" + newIp);
             System.out.println("不同点:");
             // 比较JSON字符串并输出差异
             ObjectMapper mapper = new ObjectMapper();
@@ -267,24 +269,18 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println(oldJsonFormat);
             System.out.println("新配置");
             System.out.println(newFormatJson);
-            System.out.println("是否执行更新,请输入 'Y' 执行操作，或输入其他任意键退出：");
-            Scanner scanner = new Scanner(System.in);
-            String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
-            System.out.println(cmd);
-            // 读取用户输入
-            String input = scanner.nextLine();
+            System.out.println("执行命令");
+            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
+            System.out.println(newCmd);
+            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + oldJsonFormat + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
+            System.out.println("回滚命令");
+            System.out.println(oldCmd);
 
-            // 检查输入是否为 'Y'（不区分大小写）
-            if ("Y".equalsIgnoreCase(input)) {
-                System.out.println(jsonMapper.writeValueAsString(targetMap));
-                execCmd("curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + jsonMapper.writeValueAsString(targetMap) + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config");
-
-            } else {
-                System.out.println("未执行任何操作。");
-            }
-            // 关闭扫描器
-            scanner.close();
-
+            FileUtil.appendToFile(path + "/newCmd", newCmd);
+            FileUtil.appendToFile(path + "/newCmd", "\n");
+            FileUtil.appendToFile(path + "/oldCmd", oldCmd);
+            FileUtil.appendToFile(path + "/oldCmd", "\n");
+            System.out.println();
         }
 
         return need;
