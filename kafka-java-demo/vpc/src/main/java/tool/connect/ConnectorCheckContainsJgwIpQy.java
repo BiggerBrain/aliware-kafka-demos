@@ -109,7 +109,7 @@ public class ConnectorCheckContainsJgwIpQy {
                 Connector connectorObj = jsonMapper.readValue(connectorConfigJson, new TypeReference<Connector>() {
                 });
                 boolean contains = oldJnsContains(connectorObj);
-                if(contains){
+                if (contains) {
                     System.out.println(connectorConfigJson);
                     return;
                 }
@@ -118,15 +118,15 @@ public class ConnectorCheckContainsJgwIpQy {
     }
 
     private static boolean oldJnsContains(Connector connectorObj) {
-                if (connectorObj != null && connectorObj.config != null) {
-                    for (String value : connectorObj.config.values()) {
-                        if (value.contains("100.78.98.45:10558")) {
-                            System.out.println(connectorObj.name);
-                            return true;
-                        }
-                    }
+        if (connectorObj != null && connectorObj.config != null) {
+            for (String value : connectorObj.config.values()) {
+                if (value.contains("100.78.98.45:10558")) {
+                    System.out.println(connectorObj.name);
+                    return true;
                 }
-                return false;
+            }
+        }
+        return false;
     }
 
     public static void test() throws JsonProcessingException {
