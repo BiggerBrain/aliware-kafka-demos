@@ -175,6 +175,12 @@ public class ConnectorCheckContainsJgwIpLocal {
                     targetMap.put(key, entry.getValue().replace("http://100.78.98.45:10558/interface.php", "http://30.46.103.13:13186/interface.php"));
                     need = true;
                 }
+                if (entry.getValue().equals("http://9.12.190.141:10503/interface.php")) {
+                    String key = entry.getKey();
+                    targetMap.put(key, entry.getValue().replace("http://9.12.190.141:10503/interface.php", "http://30.46.113.14:10278/interface.php"));
+                    need = true;
+                }
+
             }
         }
 
