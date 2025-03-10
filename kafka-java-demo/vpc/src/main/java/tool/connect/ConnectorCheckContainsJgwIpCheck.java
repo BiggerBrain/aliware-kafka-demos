@@ -145,6 +145,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println(connectorClusterInfo);
             System.out.println("连接器总数:" + connectorsList.size());
             connectorsList.stream().sorted();
+            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck listOssUrl
             if ("listOssUrl".equals(op)) {
                 HashSet<String> ossUrlSet = new HashSet<>();
                 for (int i = 0; i < connectorsList.size(); i++) {
@@ -165,29 +166,35 @@ public class ConnectorCheckContainsJgwIpCheck {
                 System.out.println("所有OssUrl列表如下:");
                 System.out.println(ossUrlSet);
             } else if ("listOssUrlConnector".equals(op)) {
+                //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck listOssUrlConnector http://30.47.14.10:25530/interface.php
                 String ossUrl = args[1];
                 for (int i = 0; i < connectorsList.size(); i++) {
                     String connector = connectorsList.get(i);
-                    System.out.println("获取配置:" + connector);
                     String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                    System.out.println(sourceJson);
                     HashMap<String, String> connectConfigMap = jsonMapper.readValue(sourceJson, new TypeReference<HashMap>() {
                     });
+                    boolean has = false;
                     for (Map.Entry<String, String> entry : connectConfigMap.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
                         if (ossUrl.equals(value)) {
+                            has = true;
                             System.out.println(connector + " " + " " + key + " " + value);
                         }
                     }
+                    if (has) {
+                        System.out.println("命中的连接器详细配置:" + connector);
+                        System.out.println(sourceJson);
+                    }
                 }
-
             } else if ("replace".equals(op)) {
+                String oldIp = args[1];
+                String newIp = args[2];
                 for (int i = 0; i < connectorsList.size(); i++) {
                     String connector = connectorsList.get(i);
                     System.out.println("获取配置:" + connector);
                     String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                    boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
+                    boolean contains = oldJnsOperation(oldIp, newIp, connector, sourceJson);
                     if (contains) {
                         return;
                     }
@@ -196,7 +203,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         }
     }
 
-    private static boolean oldJnsOperation(ConnectorClusterInfo connectorClusterInfo, String connector, String sourceJson) throws IOException {
+    private static boolean oldJnsOperation(String oldIp, String newIp, String connector, String sourceJson) throws IOException {
         System.out.println("老配置");
         String oldJsonFormat = formatJson(sourceJson);
         System.out.println(oldJsonFormat);
@@ -210,14 +217,9 @@ public class ConnectorCheckContainsJgwIpCheck {
         });
         if (targetMap != null && !targetMap.isEmpty()) {
             for (Map.Entry<String, String> entry : targetMap.entrySet()) {
-                if (entry.getValue().equals("http://100.78.98.45:10558/interface.php")) {
+                if (entry.getValue().equals(oldIp)) {
                     String key = entry.getKey();
-                    targetMap.put(key, entry.getValue().replace("http://100.78.98.45:10558/interface.php", "http://30.46.103.13:13186/interface.php"));
-                    need = true;
-                }
-                if (entry.getValue().equals("http://9.12.190.141:10503/interface.php")) {
-                    String key = entry.getKey();
-                    targetMap.put(key, entry.getValue().replace("http://9.12.190.141:10503/interface.php", "http://30.46.113.14:10278/interface.php"));
+                    targetMap.put(key, entry.getValue().replace(oldIp,newIp));
                     need = true;
                 }
             }
@@ -239,14 +241,14 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("是否执行更新");
             Scanner scanner = new Scanner(System.in);
             System.out.println("请输入 'Y' 执行操作，或输入其他任意键退出：");
-            String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config";
+            String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
             System.out.println(cmd);
             // 读取用户输入
             String input = scanner.nextLine();
 
             // 检查输入是否为 'Y'（不区分大小写）
             if ("Y".equalsIgnoreCase(input)) {
-                execCmd(cmd);
+                System.out.println("记得提交审批，复制执行！！！！！！！！");
             } else {
                 System.out.println("未执行任何操作。");
             }
