@@ -11,7 +11,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -142,9 +144,14 @@ public class ConnectorCheckContainsJgwIpLocal {
             System.out.println(connectorClusterInfo);
             System.out.println("connectorsList:" + connectorsList.size());
             connectorsList.stream().sorted();
+            HashSet<String> hashSet = new HashSet<>(Arrays.asList("connector-yd4394gy",
+                    "connector-yd4ez7my",
+                    "connector-yd4q73my",
+                    "connector-yd4qwmgy",
+                    "connector-yd4wbvgy"));
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-                if(connector.equals("connector-yd4ez7my")){
+                    if(hashSet.contains(connector)){
                     System.out.println("获取配置:" + connector);
                     String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
                     boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
