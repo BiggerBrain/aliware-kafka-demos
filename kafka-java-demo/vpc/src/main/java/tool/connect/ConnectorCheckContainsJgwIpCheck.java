@@ -11,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,11 +20,11 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
- * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpLocal
+ * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck
  * tkex-login -cls cls-5vzjheeo -n ns-prjm6pcb-1541281-production -p connect-qy-0 -c connect-qy -b /bin/bash
  * java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpLocal
  */
-public class ConnectorCheckContainsJgwIpSg {
+public class ConnectorCheckContainsJgwIpCheck {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
@@ -126,7 +125,6 @@ public class ConnectorCheckContainsJgwIpSg {
     public static void main(String[] args) throws Exception {
         List<ConnectorClusterInfo> clusterInfoList = new ArrayList<ConnectorClusterInfo>();
         String op = args[0];
-        String checkIp = args[1];
 
         clusterInfoList.add(new ConnectorClusterInfo("local", "127.0.0.1"));
 
@@ -145,15 +143,54 @@ public class ConnectorCheckContainsJgwIpSg {
             }).stream().collect(Collectors.toSet()).stream().collect(Collectors.toList());
 
             System.out.println(connectorClusterInfo);
-            System.out.println("connectorsList:" + connectorsList.size());
+            System.out.println("连接器总数:" + connectorsList.size());
             connectorsList.stream().sorted();
-            for (int i = 0; i < connectorsList.size(); i++) {
-                String connector = connectorsList.get(i);
-                System.out.println("获取配置:" + connector);
-                String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
-                if (contains) {
-                    return;
+            if ("listOssUrl".equals(op)) {
+                HashSet<String> ossUrlSet = new HashSet<>();
+                for (int i = 0; i < connectorsList.size(); i++) {
+                    String connector = connectorsList.get(i);
+                    System.out.println("获取配置:" + connector);
+                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                    System.out.println(sourceJson);
+                    HashMap<String, String> connectConfigMap = jsonMapper.readValue(sourceJson, new TypeReference<HashMap>() {
+                    });
+                    for (Map.Entry<String, String> entry : connectConfigMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        if (key.toLowerCase().contains("oss")) {
+                            ossUrlSet.add(value);
+                        }
+                    }
+                }
+                System.out.println("所有OssUrl列表如下:");
+                System.out.println(ossUrlSet);
+            } else if ("listOssUrlConnector".equals(op)) {
+                String ossUrl = args[1];
+                for (int i = 0; i < connectorsList.size(); i++) {
+                    String connector = connectorsList.get(i);
+                    System.out.println("获取配置:" + connector);
+                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                    System.out.println(sourceJson);
+                    HashMap<String, String> connectConfigMap = jsonMapper.readValue(sourceJson, new TypeReference<HashMap>() {
+                    });
+                    for (Map.Entry<String, String> entry : connectConfigMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        if (ossUrl.equals(value)) {
+                            System.out.println(connector + " " + " " + key + " " + value);
+                        }
+                    }
+                }
+
+            } else if ("replace".equals(op)) {
+                for (int i = 0; i < connectorsList.size(); i++) {
+                    String connector = connectorsList.get(i);
+                    System.out.println("获取配置:" + connector);
+                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                    boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
+                    if (contains) {
+                        return;
+                    }
                 }
             }
         }
