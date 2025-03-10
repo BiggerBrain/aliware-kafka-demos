@@ -108,7 +108,7 @@ public class ConnectorCheckContainsJgwIpSg {
                 if (value1.isObject() && value2.isObject()) {
                     compareJson(value1, value2, parentKey.isEmpty() ? key : parentKey + "." + key);
                 } else {
-                    System.out.println("value 不一致的key " + (parentKey.isEmpty() ? key : parentKey + "." + key) + ": " + value1 + " vs " + value2);
+                    System.out.println("value 不一致的key " + (parentKey.isEmpty() ? key : parentKey + "." + key) + ": " + value1 + " 替换 " + value2);
                 }
             }
         }
