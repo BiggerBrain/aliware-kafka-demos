@@ -188,6 +188,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                     }
                 }
             } else if ("replace".equals(op)) {
+                //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck replace http://100.83.232.146:10386/interface.php
                 String oldIp = args[1];
                 String newIp = args[2];
                 System.out.println("替换:"+ oldIp+"=>"+newIp);
