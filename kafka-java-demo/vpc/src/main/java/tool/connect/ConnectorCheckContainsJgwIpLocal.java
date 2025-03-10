@@ -144,13 +144,15 @@ public class ConnectorCheckContainsJgwIpLocal {
             connectorsList.stream().sorted();
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-
-                System.out.println("获取配置:" + connector);
-                String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
-                if (contains) {
-                    return;
+                if(connector.equals("connector-yd4ez7my")){
+                    System.out.println("获取配置:" + connector);
+                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                    boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
+                    if (contains) {
+                        return;
+                    }
                 }
+
 
             }
         }
@@ -180,7 +182,6 @@ public class ConnectorCheckContainsJgwIpLocal {
                     targetMap.put(key, entry.getValue().replace("http://9.12.190.141:10503/interface.php", "http://30.46.113.14:10278/interface.php"));
                     need = true;
                 }
-
             }
         }
 
@@ -207,8 +208,7 @@ public class ConnectorCheckContainsJgwIpLocal {
 
             // 检查输入是否为 'Y'（不区分大小写）
             if ("Y".equalsIgnoreCase(input)) {
-                String s = execCmd(cmd);
-                System.out.println("结果：" + s);
+                execCmd(cmd);
             } else {
                 System.out.println("未执行任何操作。");
             }
