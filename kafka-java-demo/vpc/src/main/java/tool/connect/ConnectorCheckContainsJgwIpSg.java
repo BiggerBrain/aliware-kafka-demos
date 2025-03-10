@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * tkex-login -cls cls-5vzjheeo -n ns-prjm6pcb-1541281-production -p connect-qy-0 -c connect-qy -b /bin/bash
  *  java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpLocal
  */
-public class ConnectorCheckContainsJgwIpLocal {
+public class ConnectorCheckContainsJgwIpSg {
     public static class ConnectorClusterInfo {
         public String region;
         public String ip;
