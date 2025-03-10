@@ -190,6 +190,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             } else if ("replace".equals(op)) {
                 String oldIp = args[1];
                 String newIp = args[2];
+                System.out.println("替换:"+ oldIp+"=>"+newIp);
                 for (int i = 0; i < connectorsList.size(); i++) {
                     String connector = connectorsList.get(i);
                     System.out.println("获取配置:" + connector);
@@ -207,8 +208,6 @@ public class ConnectorCheckContainsJgwIpCheck {
         System.out.println("老配置");
         String oldJsonFormat = formatJson(sourceJson);
         System.out.println(oldJsonFormat);
-
-        System.out.println("执行oldJnsOperation");
         Boolean need = false;
         ObjectMapper jsonMapper = new ObjectMapper();
         jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -231,16 +230,19 @@ public class ConnectorCheckContainsJgwIpCheck {
 
         // 比较JSON字符串并输出差异
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode old = mapper.readTree(oldJsonFormat);
+        JsonNode oldJson = mapper.readTree(oldJsonFormat);
         JsonNode newJson = mapper.readTree(newFormatJson);
 
         System.out.println("不同点:");
-        compareJson(old, newJson, "");
+        compareJson(oldJson, newJson, "");
+        if(!newFormatJson.contains(connector)){
+            System.out.println("程序异常");
+            return true;
+        }
 
         if (need) {
-            System.out.println("是否执行更新");
+            System.out.println("是否执行更新,请输入 'Y' 执行操作，或输入其他任意键退出：");
             Scanner scanner = new Scanner(System.in);
-            System.out.println("请输入 'Y' 执行操作，或输入其他任意键退出：");
             String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
             System.out.println(cmd);
             // 读取用户输入
