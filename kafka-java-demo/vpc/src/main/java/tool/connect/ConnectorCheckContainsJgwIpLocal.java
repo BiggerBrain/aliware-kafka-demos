@@ -6,15 +6,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
@@ -104,7 +105,7 @@ public class ConnectorCheckContainsJgwIpLocal {
                 if (value1.isObject() && value2.isObject()) {
                     compareJson(value1, value2, parentKey.isEmpty() ? key : parentKey + "." + key);
                 } else {
-                    System.out.println("Value mismatch at key " + (parentKey.isEmpty() ? key : parentKey + "." + key) + ": " + value1 + " vs " + value2);
+                    System.out.println("value 不一致的key " + (parentKey.isEmpty() ? key : parentKey + "." + key) + ": " + value1 + " vs " + value2);
                 }
             }
         }
@@ -143,40 +144,42 @@ public class ConnectorCheckContainsJgwIpLocal {
             connectorsList.stream().sorted();
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
-                if (connector.equals("connector-yd4e5ray")) {
-                    System.out.println("获取配置:" + connector);
-                    String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
-                    boolean contains = oldJnsOperation(sourceJson);
-                    if (contains) {
-                        return;
-                    }
+
+                System.out.println("获取配置:" + connector);
+                String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config");
+                boolean contains = oldJnsOperation(connectorClusterInfo, connector, sourceJson);
+                if (contains) {
+                    return;
                 }
+
             }
         }
     }
 
-    private static boolean oldJnsOperation(String sourceJson) throws IOException {
-
-
+    private static boolean oldJnsOperation(ConnectorClusterInfo connectorClusterInfo, String connector, String sourceJson) throws IOException {
         System.out.println("老配置");
         String oldJsonFormat = formatJson(sourceJson);
         System.out.println(oldJsonFormat);
-        System.out.println("新配置");
+
+        System.out.println("执行oldJnsOperation");
+        Boolean need = false;
         ObjectMapper jsonMapper = new ObjectMapper();
         jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         jsonMapper.disable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
-        Connector target = jsonMapper.readValue(sourceJson, new TypeReference<Connector>() {
+        HashMap<String, String> targetMap = jsonMapper.readValue(sourceJson, new TypeReference<HashMap>() {
         });
-        if (target != null && target.config != null) {
-            for (Map.Entry<String, String> entry : target.config.entrySet()) {
+        if (targetMap != null && !targetMap.isEmpty()) {
+            for (Map.Entry<String, String> entry : targetMap.entrySet()) {
                 if (entry.getValue().contains("100.78.98.45:10558")) {
                     String key = entry.getKey();
-                    target.config.put(key, entry.getValue().replace("100.78.98.45:10558", "30.46.103.13:13186"));
-                    break;
+                    targetMap.put(key, entry.getValue().replace("100.78.98.45:10558", "30.46.103.13:13186"));
+                    need = true;
                 }
             }
         }
-        String newFormatJson = formatJson(jsonMapper.writeValueAsString(target));
+
+        System.out.println("新配置");
+        String newFormatJson = formatJson(jsonMapper.writeValueAsString(targetMap));
         System.out.println(newFormatJson);
 
         // 比较JSON字符串并输出差异
@@ -184,11 +187,31 @@ public class ConnectorCheckContainsJgwIpLocal {
         JsonNode old = mapper.readTree(oldJsonFormat);
         JsonNode newJson = mapper.readTree(newFormatJson);
 
-        System.out.println("Differences:");
+        System.out.println("不同点:");
         compareJson(old, newJson, "");
 
+        if (need) {
+            System.out.println("是否执行更新");
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("请输入 'Y' 执行操作，或输入其他任意键退出：");
+            String cmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://" + connectorClusterInfo.ip + ":8083/connectors/" + connector + "/config";
+            System.out.println(cmd);
+            // 读取用户输入
+            String input = scanner.nextLine();
 
-        return false;
+            // 检查输入是否为 'Y'（不区分大小写）
+            if ("Y".equalsIgnoreCase(input)) {
+                String s = execCmd(cmd);
+                System.out.println("结果：" + s);
+            } else {
+                System.out.println("未执行任何操作。");
+            }
+
+            // 关闭扫描器
+            scanner.close();
+        }
+
+        return need;
     }
 
     public static void test() throws JsonProcessingException {
