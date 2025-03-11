@@ -279,9 +279,9 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("新配置");
             System.out.println(newFormatJson);
             System.out.println("执行命令");
-            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + jsonMapper.writeValueAsString(targetMap) + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
+            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + jsonMapper.writeValueAsString(newJson) + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println(newCmd);
-            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + sourceJson + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
+            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + jsonMapper.writeValueAsString(oldJson) + "' " + "http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
