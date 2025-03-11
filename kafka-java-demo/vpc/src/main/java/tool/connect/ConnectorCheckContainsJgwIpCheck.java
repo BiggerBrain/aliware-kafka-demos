@@ -219,7 +219,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             String newIp = args[3];
             Date now = new Date();
             // 定义时间格式
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
             // 格式化当前时间
             String fileName = formatter.format(now);
             File currentFile = new File(FileUtil.currentPath(ConnectorCheckContainsJgwIpCheck.class));
@@ -279,9 +279,9 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("新配置");
             System.out.println(newFormatJson);
             System.out.println("执行命令");
-            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
+            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + jsonMapper.writeValueAsString(targetMap) + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println(newCmd);
-            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + oldJsonFormat + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
+            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + sourceJson + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
