@@ -145,6 +145,8 @@ public class ConnectorCheckContainsJgwIpCheck {
         System.out.println("输入操作" + op);
 
         String connectors = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors");
+        System.out.println("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors");
+        System.out.println(connectors);
         List<String> connectorsList = JsonUtil.getUniqList(connectors);
         System.out.println(ip + " 连接器总数:" + connectorsList.size());
 
@@ -156,7 +158,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 String connector = connectorsList.get(i);
                 System.out.println("获取配置:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
-                System.out.println(sourceJson);
+//                System.out.println(sourceJson);
                 HashMap<String, String> connectConfigMap = JsonUtil.getMap(sourceJson);
                 for (Map.Entry<String, String> entry : connectConfigMap.entrySet()) {
                     String key = entry.getKey();
@@ -223,7 +225,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
 
-                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson);
+                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip);
 
             }
         } else {
@@ -231,7 +233,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         }
     }
 
-    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson) throws IOException {
+    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson, String ip) throws IOException {
         Boolean need = false;
         HashMap<String, String> targetMap = JsonUtil.getMap(sourceJson);
         if (targetMap != null && !targetMap.isEmpty()) {
@@ -270,9 +272,9 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("新配置");
             System.out.println(newFormatJson);
             System.out.println("执行命令");
-            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
+            String newCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + newFormatJson + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println(newCmd);
-            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + oldJsonFormat + "' " + " http://127.0.0.1:8083/connectors/" + connector + "/config";
+            String oldCmd = "curl -X PUT -H \"Content-Type: application/json\"" + " --data '" + oldJsonFormat + "' " + " http://" + ip + ":8083/connectors/" + connector + "/config";
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
