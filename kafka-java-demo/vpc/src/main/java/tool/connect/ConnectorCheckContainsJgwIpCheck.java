@@ -16,7 +16,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -215,6 +217,11 @@ public class ConnectorCheckContainsJgwIpCheck {
             //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 replace  http://9.62.228.131:10729/interface.php  http://11.139.250.10:11574/interface.php
             String oldIp = args[2];
             String newIp = args[3];
+            Date now = new Date();
+            // 定义时间格式
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
+            // 格式化当前时间
+            String fileName = formatter.format(now);
             File currentFile = new File(FileUtil.currentPath(ConnectorCheckContainsJgwIpCheck.class));
             String path = currentFile.getParentFile().getPath();
             System.out.println("当前父类路径:" + path);
@@ -225,7 +232,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
 
-                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip);
+                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip,fileName);
 
             }
         } else {
@@ -233,7 +240,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         }
     }
 
-    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson, String ip) throws IOException {
+    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson, String ip,String fileName) throws IOException {
         Boolean need = false;
         HashMap<String, String> targetMap = JsonUtil.getMap(sourceJson);
         if (targetMap != null && !targetMap.isEmpty()) {
@@ -278,10 +285,10 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
-            FileUtil.appendToFile(path + "/newCmd", newCmd);
-            FileUtil.appendToFile(path + "/newCmd", "\n");
-            FileUtil.appendToFile(path + "/oldCmd", oldCmd);
-            FileUtil.appendToFile(path + "/oldCmd", "\n");
+            FileUtil.appendToFile(path + "/newCmd"+fileName, newCmd);
+            FileUtil.appendToFile(path + "/newCmd"+fileName, "\n");
+            FileUtil.appendToFile(path + "/rollbackCmd"+fileName, oldCmd);
+            FileUtil.appendToFile(path + "/rollbackCmd"+fileName, "\n");
             System.out.println();
         }
 
