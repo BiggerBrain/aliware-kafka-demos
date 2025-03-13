@@ -39,11 +39,13 @@ public class TransactionKafkaProducerDemo {
             for (int i = 0; i < Integer.MAX_VALUE; i++) {
                 //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可；
                 //如果想提高性能，可以多构造几个对象，但不要太多，最好不要超过5个
+                props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG,"transaction_id_001"+i);
                 KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
 
                 //构造一个Kafka消息
                 String topic = "lsx1";
                 String value = "this is the message's value"; //消息的内容
+
                 producer.initTransactions();
                 producer.beginTransaction();
                 try {
@@ -59,7 +61,7 @@ public class TransactionKafkaProducerDemo {
                         t.printStackTrace();
                     }
                     producer.commitTransaction();
-                } catch (KafkaException e) {
+                } catch (Exception e) {
                     // 其他异常可以中止事务
                     producer.abortTransaction();
                 } finally {
