@@ -227,12 +227,11 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("当前父类路径:" + path);
 
             System.out.println("替换" + oldIp + "==>" + newIp);
-            for (int i = 0; i < connectorsList.size(); i++) {
+            for (int i = 0; i < connectorsList.size() && i < 10; i++) {
                 String connector = connectorsList.get(i);
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
-
-                boolean contains = oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip,fileName);
+                oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip, fileName);
 
             }
         } else {
@@ -240,7 +239,7 @@ public class ConnectorCheckContainsJgwIpCheck {
         }
     }
 
-    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson, String ip,String fileName) throws IOException {
+    private static boolean oldJnsOperation(String path, String oldIp, String newIp, String connector, String sourceJson, String ip, String fileName) throws IOException {
         Boolean need = false;
         HashMap<String, String> targetMap = JsonUtil.getMap(sourceJson);
         if (targetMap != null && !targetMap.isEmpty()) {
@@ -285,10 +284,10 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
-            FileUtil.appendToFile(path + "/newCmd"+fileName, newCmd);
-            FileUtil.appendToFile(path + "/newCmd"+fileName, "\n");
-            FileUtil.appendToFile(path + "/rollbackCmd"+fileName, oldCmd);
-            FileUtil.appendToFile(path + "/rollbackCmd"+fileName, "\n");
+            FileUtil.appendToFile(path + "/newCmd" + fileName, newCmd);
+            FileUtil.appendToFile(path + "/newCmd" + fileName, "\n");
+            FileUtil.appendToFile(path + "/rollbackCmd" + fileName, oldCmd);
+            FileUtil.appendToFile(path + "/rollbackCmd" + fileName, "\n");
             System.out.println();
         }
 
