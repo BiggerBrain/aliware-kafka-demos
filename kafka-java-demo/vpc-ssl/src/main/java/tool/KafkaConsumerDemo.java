@@ -14,7 +14,7 @@ import org.apache.kafka.common.config.SslConfigs;
 
 public class KafkaConsumerDemo {
 
-    public static void main(String args[]) {
+    public static void mainT(String args[]) {
         //设置sasl文件的路径
         JavaKafkaConfigurer.configureSasl();
 
@@ -76,23 +76,23 @@ public class KafkaConsumerDemo {
         consumer.subscribe(subscribedTopics);
 
         //循环消费消息
-        while (true){
-            try {
-                ConsumerRecords<String, String> records = consumer.poll(1000);
-                //必须在下次poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG
-                //建议开一个单独的线程池来消费消息，然后异步返回结果
-                for (ConsumerRecord<String, String> record : records) {
-                    System.out.println(String.format("Consume partition:%d offset:%d", record.partition(), record.offset()));
-                }
-            } catch (Exception e) {
-                try {
-                    Thread.sleep(1000);
-                } catch (Throwable ignore) {
-
-                }
-                //参考常见报错: https://help.aliyun.com/document_detail/68168.html?spm=a2c4g.11186623.6.567.2OMgCB
-                e.printStackTrace();
-            }
-        }
+//        while (true){
+//            try {
+//                ConsumerRecords<String, String> records = consumer.poll(1000);
+//                //必须在下次poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG
+//                //建议开一个单独的线程池来消费消息，然后异步返回结果
+//                for (ConsumerRecord<String, String> record : records) {
+//                    System.out.println(String.format("Consume partition:%d offset:%d", record.partition(), record.offset()));
+//                }
+//            } catch (Exception e) {
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (Throwable ignore) {
+//
+//                }
+//                //参考常见报错: https://help.aliyun.com/document_detail/68168.html?spm=a2c4g.11186623.6.567.2OMgCB
+//                e.printStackTrace();
+//            }
+//        }
     }
 }
