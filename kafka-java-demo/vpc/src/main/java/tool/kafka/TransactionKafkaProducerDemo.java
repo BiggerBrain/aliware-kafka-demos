@@ -16,7 +16,7 @@ public class TransactionKafkaProducerDemo {
     public static void main(String args[]) {
         //加载kafka.properties
 
-        String BOOTSTRAP_SERVERS = "0.0.0.0:9092";
+        String BOOTSTRAP_SERVERS = args[0];
         Properties props = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);

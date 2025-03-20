@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+// java -cp *:kafka-vpc-demo.jar tool.kafka.BrokerConfigCheckService  alikafka-serverless-cn-20s46i96l0d-1000-vpc.alikafka.aliyuncs.com:9092
 public class BrokerConfigCheckService {
     public static void main(String[] args) {
         mainAliKafka(args);
