@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class BrokerCheckService {
+public class BrokerConfigCheckService {
     public static void main(String[] args) {
         mainAliKafka(args);
     }
@@ -56,6 +56,9 @@ public class BrokerCheckService {
             ListTopicsResult listTopicsResult = adminClient.listTopics(new ListTopicsOptions().listInternal(true));
             Collection<TopicListing> topicListings = listTopicsResult.listings().get();
             System.out.println("数量" + topicListings.size());
+            for (TopicListing topicListing : topicListings) {
+                System.out.println(topicListing.name() + "    " + topicListing.isInternal());
+            }
             for (TopicListing topicListing : topicListings) {
                 System.out.println(topicListing.name() + "信息" + topicListing);
                 DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(TopicCollection.ofTopicNames(Arrays.asList(topicListing.name())));
