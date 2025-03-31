@@ -228,7 +228,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("当前父类路径:" + path);
 
             System.out.println("替换" + oldIp + "==>" + newIp);
-            for (int i = 0; i < connectorsList.size() && i < 10; i++) {
+            for (int i = 0; i < connectorsList.size() && i < 3; i++) {
                 String connector = connectorsList.get(i);
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
