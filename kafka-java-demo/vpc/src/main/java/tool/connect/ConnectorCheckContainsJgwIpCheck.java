@@ -216,6 +216,7 @@ public class ConnectorCheckContainsJgwIpCheck {
                 }
             }
         } else if ("replace".equals(op)) {
+            System.out.println("风险操作，必须留底，注意，一次替换3个任务");
             String oldIp = args[2];
             String newIp = args[3];
             Date now = new Date();
