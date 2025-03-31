@@ -229,11 +229,14 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("当前父类路径:" + path);
 
             System.out.println("替换" + oldIp + "==>" + newIp);
-            for (int i = 0; i < connectorsList.size() && i < 3; i++) {
+            for (int i = 0, replaceCount = 0; i < connectorsList.size() && replaceCount < 3; i++) {
                 String connector = connectorsList.get(i);
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
-                oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip, fileName);
+                boolean needReplace = oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip, fileName);
+                if (needReplace) {
+                    replaceCount++;
+                }
             }
         } else {
             System.out.println("不支持该命令，执行完:" + op);
