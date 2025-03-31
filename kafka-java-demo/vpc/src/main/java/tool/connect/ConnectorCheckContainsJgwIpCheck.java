@@ -288,10 +288,10 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("回滚命令");
             System.out.println(oldCmd);
 
-            FileUtil.appendToFile(path + "/newCmd" + fileName, newCmd);
-            FileUtil.appendToFile(path + "/newCmd" + fileName, "\n");
-            FileUtil.appendToFile(path + "/rollbackCmd" + fileName, oldCmd);
-            FileUtil.appendToFile(path + "/rollbackCmd" + fileName, "\n");
+            FileUtil.appendToFile(path + "/replace_newCmd" + fileName, newCmd);
+            FileUtil.appendToFile(path + "/replace_newCmd" + fileName, "\n");
+            FileUtil.appendToFile(path + "/replace_rollbackCmd" + fileName, oldCmd);
+            FileUtil.appendToFile(path + "/replace_rollbackCmd" + fileName, "\n");
             System.out.println();
         }
 
