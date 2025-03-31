@@ -214,7 +214,6 @@ public class ConnectorCheckContainsJgwIpCheck {
                 }
             }
         } else if ("replace".equals(op)) {
-            //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 replace  http://9.62.228.131:10729/interface.php  http://11.139.250.10:11574/interface.php
             String oldIp = args[2];
             String newIp = args[3];
             Date now = new Date();
@@ -232,7 +231,6 @@ public class ConnectorCheckContainsJgwIpCheck {
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
                 oldJnsOperation(path, oldIp, newIp, connector, sourceJson, ip, fileName);
-
             }
         } else {
             System.out.println("不支持该命令，执行完:" + op);
