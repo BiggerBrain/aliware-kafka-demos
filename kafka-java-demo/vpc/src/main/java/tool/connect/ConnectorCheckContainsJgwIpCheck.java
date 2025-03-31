@@ -195,6 +195,8 @@ public class ConnectorCheckContainsJgwIpCheck {
             //java -cp *:kafka-vpc-demo.jar tool.connect.ConnectorCheckContainsJgwIpCheck 127.0.0.1 listOssUrlConnector  http://9.62.228.131:10729/interface.php
             String ossUrl = args[2];
             System.out.println("查找包含url的连接器:" + ossUrl);
+            System.out.println("===================================================");
+            System.out.println();
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
