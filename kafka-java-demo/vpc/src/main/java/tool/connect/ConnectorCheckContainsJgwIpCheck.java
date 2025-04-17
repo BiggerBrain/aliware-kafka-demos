@@ -197,6 +197,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("查找包含url的连接器:" + ossUrl);
             System.out.println("===================================================");
             System.out.println();
+            int contains = 0;
             for (int i = 0; i < connectorsList.size(); i++) {
                 String connector = connectorsList.get(i);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
@@ -213,10 +214,12 @@ public class ConnectorCheckContainsJgwIpCheck {
                 if (has) {
                     System.out.println("包含连接器详细配置:" + connector);
                     System.out.println(sourceJson);
+                    contains++;
                 }
             }
+            System.out.println("包含下线Oss的连接器数量:" + contains);
         } else if ("replace".equals(op)) {
-            System.out.println("风险操作，必须留底，注意，一次替换3个任务");
+            System.out.println("风险操作，必须留底，注意，一次替换100个任务");
             String oldIp = args[2];
             String newIp = args[3];
             Date now = new Date();
@@ -229,7 +232,7 @@ public class ConnectorCheckContainsJgwIpCheck {
             System.out.println("当前父类路径:" + path);
 
             System.out.println("替换" + oldIp + "==>" + newIp);
-            for (int i = 0, replaceCount = 0; i < connectorsList.size() && replaceCount < 3; i++) {
+            for (int i = 0, replaceCount = 0; i < connectorsList.size() && replaceCount < 100; i++) {
                 String connector = connectorsList.get(i);
                 System.out.println("校验是否替换:" + connector);
                 String sourceJson = execCmd("curl -X GET -H \"Content-Type: application/json\"" + " http://" + ip + ":8083/connectors/" + connector + "/config");
