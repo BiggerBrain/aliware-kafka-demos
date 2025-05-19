@@ -1,5 +1,6 @@
 package publicnet;
 
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -50,9 +51,9 @@ public class KafkaProducerDemo {
         try {
             //批量获取 futures 可以加快速度, 但注意，批量不要太大
             List<Future<RecordMetadata>> futures = new ArrayList<Future<RecordMetadata>>(128);
-            for (int i =0; i < 100; i++) {
-
-                String value = "{\"price\":10.0,\"product_id\":10,\"category\":\"lsx\",\"product_name\":\"lsx-756320344x" + i + "xxxx\"}";
+            for (int i =0; i < 1000000000; i++) {
+                String value = "{ \"product_id\": 1, \"product_name\": \"Laptop\", \"price\": 999.99, \"category\": \"El" +i+
+                        "ectronics\" }";
                 System.out.println(value);
                 //发送消息，并获得一个Future对象
                 ProducerRecord<String, String> kafkaMessage =  new ProducerRecord<String, String>(topic, value);
