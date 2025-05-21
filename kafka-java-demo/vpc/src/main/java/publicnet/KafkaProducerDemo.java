@@ -1,18 +1,14 @@
 package publicnet;
 
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.config.SaslConfigs;
-import tool.kafka.JavaKafkaConfigurer;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.Future;
 
 public class KafkaProducerDemo {
