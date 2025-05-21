@@ -15,8 +15,10 @@ public class HiveTest {
             e.printStackTrace();
             System.exit(1);
         }
+        System.out.println(args[0]);
+
         // 根据连接信息和账号密码获取连接
-        Connection conn = DriverManager.getConnection("jdbc:hive2://30.46.110.3:10830/default", "hadoop", "");
+        Connection conn = DriverManager.getConnection("jdbc:hive2://" +args[0]+"/default", "hadoop", "");
         // 创建状态参数（使用conn.prepareStatement(sql)预编译sql防止sql注入，但常用于参数化执行sql，批量执行不同的sql建议使用下面这种方式）
         Statement stmt = conn.createStatement();
         // 以下是执行简单的建表和增查操作
