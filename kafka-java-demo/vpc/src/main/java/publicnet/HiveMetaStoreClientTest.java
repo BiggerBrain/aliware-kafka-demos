@@ -16,14 +16,14 @@ public class HiveMetaStoreClientTest {
             Configuration conf = new Configuration();
             conf.set("hadoop.security.authentication", "kerberos");
             conf.set("hive.metastore.uris", "thrift://30.46.110.3:11175"); // 替换为你的 HMS 地址
-
             // 设置 Kerberos 配置
-            System.setProperty("java.security.krb5.conf", "/etc/krb5.conf"); // 替换为你的 krb5.conf 路径
+            System.setProperty("java.security.krb5.conf", "/etc/krb5.conf"); // 替换为你的 krb5.conf 路径;
             UserGroupInformation.setConfiguration(conf);
             UserGroupInformation.loginUserFromKeytab("kafka@EMR-S0M9K67E", "/tmp/kafka.keytab"); // 替换为你的 principal 和 keytab
 
             // 创建 HiveMetaStoreClient
             HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
+
 
             // 获取所有数据库
             List<String> databases = client.getAllDatabases();
@@ -35,11 +35,8 @@ public class HiveMetaStoreClientTest {
 
             Table table = client.getTable("default", "products20");
             System.out.println(table.toString());
-            // 关闭客户端
-            client.close();
 
-        } catch (MetaException e) {
-            e.printStackTrace();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
