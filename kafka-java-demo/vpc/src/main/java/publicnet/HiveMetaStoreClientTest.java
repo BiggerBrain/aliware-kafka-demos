@@ -10,6 +10,7 @@ import java.util.List;
 
 public class HiveMetaStoreClientTest {
     //thrift://30.46.110.3:11175
+    //thrift://10.0.1.37:7004
     public static void main(String[] args) {
         try {
             String uri = args[0];
@@ -20,7 +21,7 @@ public class HiveMetaStoreClientTest {
             conf.set("hive.metastore.uris", uri); // 替换为你的 HMS 地址
             // 设置 Kerberos 配置
             System.setProperty("java.security.krb5.conf", "/etc/krb5.conf"); // 替换为你的 krb5.conf 路径;
-            System.setProperty("java.security.krb5.conf", "/etc/krb5.conf"); // 替换为你的 krb5.conf 路径;
+            //System.setProperty("java.security.krb5.conf", "/etc/krb5.conf"); // 替换为你的 krb5.conf 路径;
 
             UserGroupInformation.setConfiguration(conf);
             UserGroupInformation.loginUserFromKeytab("kafka@EMR-S0M9K67E", "/tmp/kafka.keytab"); // 替换为你的 principal 和 keytab
