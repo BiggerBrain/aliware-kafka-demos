@@ -39,7 +39,7 @@ public class BaradTest {
             // 将BaradApiResponse对象序列化为JSON字符串
             Gson gson = new Gson();
             String jsonInputString = gson.toJson(apiRequest);
-            System.out.println("instanceId:" + instanceId + ":" + ip + jsonInputString);
+            //System.out.println("instanceId:" + instanceId + ":" + ip + jsonInputString);
 
             // 发送请求
             try (OutputStream os = connection.getOutputStream()) {
