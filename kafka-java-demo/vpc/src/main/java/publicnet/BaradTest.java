@@ -34,7 +34,7 @@ import com.google.gson.Gson;
 public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(10000);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(20000);
     static List<Future<?>> futures = new ArrayList<>();
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         HttpURLConnection connection = null;
@@ -182,7 +182,7 @@ public class BaradTest {
         try {
             // 请求关闭、发生超时或者当前线程中断，无论哪一个首先发生之后，都将导致阻塞，直到所有任务完成执行
             // 设置最长等待10秒
-            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -193,7 +193,7 @@ public class BaradTest {
             ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>> opsMap = entry.getValue();
             opsMap.entrySet().stream().forEach(opsEntry -> {
                 opsEntry.getValue().entrySet().stream().forEach(ipEntry -> {
-                    System.out.println("instanceId:" + instanceId + ",高危操作:" + opsEntry.getKey() + ",ip:" + ipEntry.getKey() + ",高危操作监控:" + ipEntry.getValue().stream().findFirst());
+                    System.out.println("高危instanceId:" + instanceId + ",高危操作:" + opsEntry.getKey() + ",ip:" + ipEntry.getKey() + ",高危操作监控:" + ipEntry.getValue().stream().findFirst());
                 });
             });
         });
