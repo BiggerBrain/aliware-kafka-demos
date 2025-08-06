@@ -34,7 +34,7 @@ import com.google.gson.Gson;
 public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(20000);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(60000);
     static List<Future<?>> futures = new ArrayList<>();
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         HttpURLConnection connection = null;
