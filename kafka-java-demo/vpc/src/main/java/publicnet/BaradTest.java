@@ -16,6 +16,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -24,6 +30,10 @@ import com.google.gson.Gson;
  * java -cp *:kafka-vpc-demo-jar-with-dependencies.jar publicnet.BaradTest
  */
 public class BaradTest {
+
+    static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(24);
+
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         try {
             // 目标URL
@@ -49,7 +59,7 @@ public class BaradTest {
 
             // 获取响应
             int responseCode = connection.getResponseCode();
-            System.out.println("Response" + region + " Code: " + responseCode);
+            System.out.println("Response:" + instanceId + ":" + region + " Code: " + responseCode);
 
             if (responseCode == 200) {
                 // 读取响应内容
@@ -66,6 +76,9 @@ public class BaradTest {
                     for (Double value : point) {
                         if (value != null && value > 0) {
                             System.out.println(instanceId + ":" + ip + ":" + op + ":" + value);
+                            opMap.computeIfAbsent(instanceId, (k) -> new ConcurrentHashMap<>())
+                                    .computeIfAbsent(op, (k) -> new ConcurrentHashMap<>())
+                                    .computeIfAbsent(ip, (k) -> new TreeSet<>()).add(String.valueOf(value));
                         }
                     }
                 }
@@ -110,7 +123,7 @@ public class BaradTest {
                 String instanceId = resultSet.getString("instance_id"); // 替换为你的列名
                 String instanceType = resultSet.getString("instance_type"); // 替换为你的列名
                 String ip = resultSet.getString("ip"); // 替换为你的列名
-              //  System.out.println("ID: " + region + ", instanceId: " + instanceId + ", instanceType: " + instanceType + ", ip: " + ip);
+                //  System.out.println("ID: " + region + ", instanceId: " + instanceId + ", instanceType: " + instanceType + ", ip: " + ip);
                 instanceIpMap.computeIfAbsent(instanceId, k -> new ArrayList<>()).add(ip);
                 instanceRegionMap.put(instanceId, region);
             }
@@ -138,18 +151,41 @@ public class BaradTest {
         System.out.println("instanceIpMap: " + instanceIpMap.size());
         System.out.println("instanceRegionMap: " + instanceRegionMap.size());
         List<String> ops = Arrays.asList("alter_configs_error", "delete_topic_serror", "create_acls_error", "incremental_alterconfigs_error");
+        AtomicInteger i = new AtomicInteger();
         instanceIpMap.forEach((instanceId, ipList) -> {
-            if (instanceId.equals("ckafka-bz4meaae")) {
-                String region = instanceRegionMap.get(instanceId);
-                for (String ip : ipList) {
-                    for (String op : ops) {
+            System.out.println(i.getAndIncrement());
+            String region = instanceRegionMap.get(instanceId);
+            for (String ip : ipList) {
+                for (String op : ops) {
+                    executorService.submit(() -> {
+                        int number = i.get();
                         BaradRequest request = new BaradRequest(op);
                         request.getDimensions().add(new BaradRequest.Dimension(region, "observable_inner", ip));
                         sendBaradApiResponse(instanceId, ip, request, region, op);
-                    }
+                        System.out.println(number + "执行完");
+                    });
                 }
-
             }
+        });
+
+        executorService.shutdown(); // 启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
+        try {
+            // 请求关闭、发生超时或者当前线程中断，无论哪一个首先发生之后，都将导致阻塞，直到所有任务完成执行
+            // 设置最长等待10秒
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("高危操作实例数量:" + opMap.size());
+        opMap.entrySet().stream().forEach(entry -> {
+            String instanceId = entry.getKey();
+            ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>> opsMap = entry.getValue();
+            opsMap.entrySet().stream().forEach(opsEntry -> {
+                opsEntry.getValue().entrySet().stream().forEach(ipEntry -> {
+                    System.out.println("instanceId:" + instanceId + ",高危操作:" + opsEntry.getKey() + ",ip:" + ipEntry.getKey() + ",高危操作监控:" + ipEntry.getValue().stream().findFirst());
+                });
+            });
         });
     }
 }
