@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ public class BaradTest {
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
     private static final ExecutorService executorService = Executors.newFixedThreadPool(60000);
     static List<Future<?>> futures = new ArrayList<>();
+
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         HttpURLConnection connection = null;
         try {
@@ -89,7 +91,7 @@ public class BaradTest {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             // 关闭连接
             if (connection != null) {
                 connection.disconnect();
@@ -157,34 +159,34 @@ public class BaradTest {
         }
         System.out.println("instanceIpMap: " + instanceIpMap.size());
         System.out.println("instanceRegionMap: " + instanceRegionMap.size());
+
         List<String> ops = Arrays.asList("alter_configs_error", "delete_topic_serror", "create_acls_error", "incremental_alterconfigs_error");
         AtomicInteger i = new AtomicInteger();
         instanceIpMap.forEach((instanceId, ipList) -> {
-            System.out.println(i.getAndIncrement());
-            String region = instanceRegionMap.get(instanceId);
-            for (String ip : ipList) {
-                for (String op : ops) {
-                    Future<?> observableInner = executorService.submit(() -> {
-                        int number = i.get();
-                        BaradRequest request = new BaradRequest(op);
-                        request.getDimensions().add(new BaradRequest.Dimension(region, "observable_inner", ip));
-                        sendBaradApiResponse(instanceId, ip, request, region, op);
-                        System.out.println(number + "执行完");
-                    });
-                    futures.add(observableInner);
+            if (i.get() < Integer.MAX_VALUE) {
+                System.out.println(i.getAndIncrement());
+                String region = instanceRegionMap.get(instanceId);
+                for (String ip : ipList) {
+                    for (String op : ops) {
+                        Future<?> observableInner = executorService.submit(() -> {
+                            int number = i.get();
+                            BaradRequest request = new BaradRequest(op);
+                            request.getDimensions().add(new BaradRequest.Dimension(region, "observable_inner", ip));
+                            sendBaradApiResponse(instanceId, ip, request, region, op);
+                            System.out.println(number + "执行完");
+                        });
+                        futures.add(observableInner);
+                    }
                 }
             }
         });
+        System.out.println("总任务数:" + futures.size());
         for (Future<?> future : futures) {
-            future.get(); // 等待每个任务完成
-        }
-        executorService.shutdown(); // 启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
-        try {
-            // 请求关闭、发生超时或者当前线程中断，无论哪一个首先发生之后，都将导致阻塞，直到所有任务完成执行
-            // 设置最长等待10秒
-            executorService.awaitTermination(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                future.get(30, TimeUnit.SECONDS); // 等待每个任务完成
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
         }
 
         System.out.println("高危操作实例数量:" + opMap.size());
