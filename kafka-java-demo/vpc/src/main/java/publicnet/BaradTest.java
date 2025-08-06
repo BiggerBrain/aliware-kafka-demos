@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,11 @@ import com.google.gson.Gson;
 
 /**
  * java -cp *:kafka-vpc-demo-jar-with-dependencies.jar publicnet.BaradTest
+ * 地域级别批量
+ * url换新
+ * call新
  */
+
 public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
@@ -41,7 +44,7 @@ public class BaradTest {
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         HttpURLConnection connection = null;
         try {
-            // 目标URL
+            // 目标URL,
             String url = "http://" + region + ".api.barad.tencentyun.com/metric/statisticsbatch";
 
             // 创建HTTP连接
