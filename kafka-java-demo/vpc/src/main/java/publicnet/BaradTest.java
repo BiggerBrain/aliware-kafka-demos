@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -33,7 +35,7 @@ public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
     private static final ExecutorService executorService = Executors.newFixedThreadPool(24);
-
+    static List<Future<?>> futures = new ArrayList<>();
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         try {
             // 目标URL
@@ -90,7 +92,7 @@ public class BaradTest {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         // 数据库连接信息:mysql -h 11.180.146.140 -P3306 -uroot -p'aIEFdkf*b0239_354'
         //select * from instance_broker_detail limit 10;
         String url = "jdbc:mysql://11.180.146.140:3306/ckafka"; // 替换为你的数据库地址和名称
@@ -157,17 +159,20 @@ public class BaradTest {
             String region = instanceRegionMap.get(instanceId);
             for (String ip : ipList) {
                 for (String op : ops) {
-                    executorService.submit(() -> {
+                    Future<?> observableInner = executorService.submit(() -> {
                         int number = i.get();
                         BaradRequest request = new BaradRequest(op);
                         request.getDimensions().add(new BaradRequest.Dimension(region, "observable_inner", ip));
                         sendBaradApiResponse(instanceId, ip, request, region, op);
                         System.out.println(number + "执行完");
                     });
+                    futures.add(observableInner);
                 }
             }
         });
-
+        for (Future<?> future : futures) {
+            future.get(); // 等待每个任务完成
+        }
         executorService.shutdown(); // 启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
         try {
             // 请求关闭、发生超时或者当前线程中断，无论哪一个首先发生之后，都将导致阻塞，直到所有任务完成执行
