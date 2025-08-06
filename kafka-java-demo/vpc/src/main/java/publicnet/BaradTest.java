@@ -35,7 +35,7 @@ import com.google.gson.Gson;
 public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(60000);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(600000);
     static List<Future<?>> futures = new ArrayList<>();
 
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
@@ -181,14 +181,7 @@ public class BaradTest {
             }
         });
         System.out.println("总任务数:" + futures.size());
-        for (Future<?> future : futures) {
-            try {
-                future.get(30, TimeUnit.SECONDS); // 等待每个任务完成
-            } catch (TimeoutException e) {
-                e.printStackTrace();
-            }
-        }
-
+        Thread.sleep(TimeUnit.MINUTES.toMillis(10));
         System.out.println("高危操作实例数量:" + opMap.size());
         opMap.entrySet().stream().forEach(entry -> {
             String instanceId = entry.getKey();
