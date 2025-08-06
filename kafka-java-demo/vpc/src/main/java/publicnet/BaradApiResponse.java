@@ -10,7 +10,7 @@ public class BaradApiResponse {
 
     public static class Data {
         private String startTime;
-        private List<List<Integer>> points;
+        private List<List<Double>> points;
 
         public String getStartTime() {
             return startTime;
@@ -20,11 +20,11 @@ public class BaradApiResponse {
             this.startTime = startTime;
         }
 
-        public List<List<Integer>> getPoints() {
+        public List<List<Double>> getPoints() {
             return points;
         }
 
-        public void setPoints(List<List<Integer>> points) {
+        public void setPoints(List<List<Double>> points) {
             this.points = points;
         }
     }

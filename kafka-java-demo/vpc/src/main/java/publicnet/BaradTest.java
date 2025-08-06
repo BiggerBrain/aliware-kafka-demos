@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ import com.google.gson.Gson;
  * java -cp *:kafka-vpc-demo-jar-with-dependencies.jar publicnet.BaradTest
  */
 public class BaradTest {
-    public static void sendBaradApiResponse(String instanceId, String ip, BaradApiRequest apiRequest, String region) {
+    public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
         try {
             // 目标URL
             String url = "http://" + region + ".api.barad.tencentyun.com/metric/statisticsbatch";
@@ -38,7 +39,7 @@ public class BaradTest {
             // 将BaradApiResponse对象序列化为JSON字符串
             Gson gson = new Gson();
             String jsonInputString = gson.toJson(apiRequest);
-            System.out.println("instanceId:" + instanceId + ":" + jsonInputString);
+            System.out.println("instanceId:" + instanceId + ":" + ip + jsonInputString);
 
             // 发送请求
             try (OutputStream os = connection.getOutputStream()) {
@@ -56,13 +57,18 @@ public class BaradTest {
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                     responseContent = br.lines().collect(Collectors.joining());
                 }
-                System.out.println(responseContent);
+                //System.out.println(responseContent);
                 BaradApiResponse response = new Gson().fromJson(responseContent, BaradApiResponse.class);
 
                 // 提取points
-                List<List<Integer>> points = response.getData().getPoints();
-                System.out.println("Points: " + points);
-
+                List<List<Double>> points = response.getData().getPoints();
+                for (List<Double> point : points) {
+                    for (Double value : point) {
+                        if (value != null && value > 0) {
+                            System.out.println(instanceId + ":" + ip + ":" + op + ":" + value);
+                        }
+                    }
+                }
             }
             // 关闭连接
             connection.disconnect();
@@ -104,7 +110,7 @@ public class BaradTest {
                 String instanceId = resultSet.getString("instance_id"); // 替换为你的列名
                 String instanceType = resultSet.getString("instance_type"); // 替换为你的列名
                 String ip = resultSet.getString("ip"); // 替换为你的列名
-                System.out.println("ID: " + region + ", instanceId: " + instanceId + ", instanceType: " + instanceType + ", ip: " + ip);
+              //  System.out.println("ID: " + region + ", instanceId: " + instanceId + ", instanceType: " + instanceType + ", ip: " + ip);
                 instanceIpMap.computeIfAbsent(instanceId, k -> new ArrayList<>()).add(ip);
                 instanceRegionMap.put(instanceId, region);
             }
@@ -131,16 +137,16 @@ public class BaradTest {
         }
         System.out.println("instanceIpMap: " + instanceIpMap.size());
         System.out.println("instanceRegionMap: " + instanceRegionMap.size());
-        int i = 0;
-        instanceIpMap.entrySet().forEach(instanceEntry -> {
-            String instanceId = instanceEntry.getKey();
+        List<String> ops = Arrays.asList("alter_configs_error", "delete_topic_serror", "create_acls_error", "incremental_alterconfigs_error");
+        instanceIpMap.forEach((instanceId, ipList) -> {
             if (instanceId.equals("ckafka-bz4meaae")) {
-                List<String> ipList = instanceEntry.getValue();
                 String region = instanceRegionMap.get(instanceId);
                 for (String ip : ipList) {
-                    BaradApiRequest request = new BaradApiRequest();
-                    request.getDimensions().add(new BaradApiRequest.Dimension(region, "observable_inner", ip));
-                    sendBaradApiResponse(instanceId, ip, request, region);
+                    for (String op : ops) {
+                        BaradRequest request = new BaradRequest(op);
+                        request.getDimensions().add(new BaradRequest.Dimension(region, "observable_inner", ip));
+                        sendBaradApiResponse(instanceId, ip, request, region, op);
+                    }
                 }
 
             }

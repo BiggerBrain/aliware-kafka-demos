@@ -24,7 +24,7 @@ import java.util.List;
  * ]
  * }
  */
-public class BaradApiRequest {
+public class BaradRequest {
     private String seqId = "baradapi";
     private String caller = "customApi";
     private String namespace = "qce/ckafka";
@@ -35,6 +35,10 @@ public class BaradApiRequest {
     private String endTime = "2025-08-05 17:10:00";
     private String period = "60";
     private List<Dimension> dimensions = new ArrayList<>();
+
+    public BaradRequest(String metricName) {
+        this.metricName = metricName;
+    }
 
     public static class Dimension {
         public String region;
