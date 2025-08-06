@@ -34,15 +34,16 @@ import com.google.gson.Gson;
 public class BaradTest {
 
     static ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, TreeSet<String>>>> opMap = new ConcurrentHashMap<>();
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(24);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(10000);
     static List<Future<?>> futures = new ArrayList<>();
     public static void sendBaradApiResponse(String instanceId, String ip, BaradRequest apiRequest, String region, String op) {
+        HttpURLConnection connection = null;
         try {
             // 目标URL
             String url = "http://" + region + ".api.barad.tencentyun.com/metric/statisticsbatch";
 
             // 创建HTTP连接
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json; utf-8");
             connection.setRequestProperty("Accept", "application/json");
@@ -85,10 +86,14 @@ public class BaradTest {
                     }
                 }
             }
-            // 关闭连接
-            connection.disconnect();
+
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            // 关闭连接
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 
