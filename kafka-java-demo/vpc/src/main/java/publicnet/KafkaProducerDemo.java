@@ -6,9 +6,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.config.SaslConfigs;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Future;
 
 public class KafkaProducerDemo {
@@ -18,10 +20,8 @@ public class KafkaProducerDemo {
 
         Properties props = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "150.109.162.241:50004");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "106.55.176.185:50001");
 
-        //构造一个Kafka消息
-        String topic = "source"; //消息所属的Topic，请在控制台申请之后，填写在这里
 
         //Kafka消息的序列化方式
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
@@ -34,7 +34,7 @@ public class KafkaProducerDemo {
         props.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, 3000);
         //如果客户指定ACL，则采用ACL连接，只支持SASL_PLAINTEXT
         String prefix = "org.apache.kafka.common.security.plain.PlainLoginModule";
-        String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, "ckafka-37wobnk3#admin", "12345678a");
+        String jaasConfig = String.format("%s required username=\"%s\" password=\"%s\";", prefix, "ckafka-aj5adezx#src", "12345678a");
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
         //  SASL_PLAINTEXT 公网接入
         props.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
@@ -43,22 +43,25 @@ public class KafkaProducerDemo {
         //构造Producer对象，注意，该对象是线程安全的，一般来说，一个进程内一个Producer对象即可；
         //如果想提高性能，可以多构造几个对象，但不要太多，最好不要超过5个
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
+        //构造一个Kafka消息
 
         try {
             //批量获取 futures 可以加快速度, 但注意，批量不要太大
             List<Future<RecordMetadata>> futures = new ArrayList<Future<RecordMetadata>>(128);
-            for (int i =0; i < 1000000000; i++) {
-                String value = "{ \"product_id\": 1, \"product_name\": \"Laptop\", \"price\": 999.99, \"category\": \"El" +i+
+            for (int i = 0; i < 1000000000; i++) {
+                String value = "{ \"product_id\": 1, \"product_name\": \"Laptop\", \"price\": 999.99, \"category\": \"El" + i +
                         "ectronics\" }";
+                Random random = new Random();
+                String topic = "test" + random.nextInt(3) + "-replica2"; //消息所属的Topic，请在控制台申请之后，填写在这里
                 System.out.println(value);
                 //发送消息，并获得一个Future对象
-                ProducerRecord<String, String> kafkaMessage =  new ProducerRecord<String, String>(topic, value);
+                ProducerRecord<String, String> kafkaMessage = new ProducerRecord<String, String>(topic, value);
                 Future<RecordMetadata> metadataFuture = producer.send(kafkaMessage);
                 futures.add(metadataFuture);
 
             }
             producer.flush();
-            for (Future<RecordMetadata> future: futures) {
+            for (Future<RecordMetadata> future : futures) {
                 //同步获得Future对象的结果
                 try {
                     RecordMetadata recordMetadata = future.get();
